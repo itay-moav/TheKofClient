@@ -60,7 +60,7 @@ class Util_Collection implements \Iterator,\Countable{
 	 */
 	private function parse_raw_response(Util_RawResponse $RawResponse):void{
 		$this->error_handle($RawResponse->http_code,$RawResponse->http_code_message);
-				
+		
 		//NOTICE! if the query fetches only one result, then the response wont have [data].
 		//It will have ONLY the one, fully loaded, object
 		if(isset($RawResponse->body->id) && $RawResponse->body->id){//one full object was returned
@@ -75,8 +75,8 @@ class Util_Collection implements \Iterator,\Countable{
 			$this->total_entries_in_query 	= $RawResponse->body->total;
 			$this->page_size 				= $RawResponse->body->per_page;
 			$this->page 					= $RawResponse->body->page;
-			$this->link_previous			= $RawResponse->body->prev??null;//at the edges u can still get null here 
-			$this->link_next				= $RawResponse->body->next??null;//at the edges u can still get null here
+			$this->link_previous			= $RawResponse->body->links->prev??null;//at the edges u can still get null here 
+			$this->link_next				= $RawResponse->body->links->next??null;//at the edges u can still get null here
 		}
 	}
 
@@ -120,5 +120,21 @@ class Util_Collection implements \Iterator,\Countable{
 			default:
 				throw new \RuntimeException($http_message,$http_code);
 		}
+	}
+	
+	/**
+	 * Returns the link for the next set in the current query
+	 * @return string|NULL
+	 */
+	public function next_link():?string{
+	    return $this->link_next;
+	}
+	
+	public function page(){
+	    return $this->page;
+	}
+	
+	public function page_size(){
+	    return $this->page_size;
 	}
 }

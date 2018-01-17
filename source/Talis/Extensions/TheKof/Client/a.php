@@ -102,7 +102,7 @@ abstract class Client_a{
 	 * @param int $page if zero, parameter will be ommited and SM defaults will be used
 	 * @param int $per_page if zero, parameter will be ommited and SM defaults will be used
 	 *
-	 * @return Util_Util_DryRequest
+	 * @return Util_DryRequest
 	 */
 	public function get_dry(int $page=0,int $per_page=0):Util_DryRequest{
 		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_GET);

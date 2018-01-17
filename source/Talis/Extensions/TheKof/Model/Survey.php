@@ -19,4 +19,11 @@ class Model_Survey extends Model_a{
 	public function collectors(int $collector_id=0):Client_Collectors{
 		return $this->get_client()->collectors($collector_id);
 	}
+	
+	/**
+	 * @return string
+	 */
+	public function title():string{
+	    return $this->item_data->title;
+	}
 }

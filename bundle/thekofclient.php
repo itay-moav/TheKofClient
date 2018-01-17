@@ -71,13 +71,13 @@ class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
 	 * @return Util_RawResponse
 	 */
 	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
-		echo "
+	/*	TODO Find a better way for loging injection echo "
 ==================================================
 DOing " . $DryRequest->method() . ': ' . $DryRequest->url() . "
 
 
 
-";
+";*/
 		$this->concrete_http_client->setMethod($DryRequest->method());
 		$this->concrete_http_client->setUri($DryRequest->url());
 		$this->concrete_http_client->setHeaders($DryRequest->headers());
