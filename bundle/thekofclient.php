@@ -2,447 +2,72 @@
 
 
 /**
+ * Collectors client
+ * 
  * @author Itay Moav
- * @Date Nov 17 - 2017
+ * @date 17-11-2017
  */
-abstract class HTTPClientWrapper_a{
-	/**
-	 * HTTP method types
-	 * 
-	 * @var string $METHOD_GET
-	 * @var string $METHOD_POST
-	 * @var string $METHOD_PUT
-	 * @var string $METHOD_DELETE
-	 * @var string $METHOD_OPTIONS
-	 * @var string $METHOD_HEAD
-	 */
-	const METHOD_GET	 = 'GET',
-		  METHOD_POST	 = 'POST',
-		  METHOD_PUT	 = 'PUT',
-		  METHOD_DELETE  = 'DELETE',
-		  METHOD_OPTIONS = 'OPTIONS',
-		  METHOD_HEAD	 = 'HEAD'
-	;
-	
-	/**
-	 * @var mixed the actual http client
-	 */
-	protected $concrete_http_client = null;
-
-	/**
-	 * Just send in the instantiated http client
-	 * 
-	 * @param mixed $concrete_http_client
-	 */
-	public function __construct($concrete_http_client){
-		$this->concrete_http_client = $concrete_http_client;
+class Client_Collectors extends Client_a{
+	protected function add_url_part():void{
+		$this->current_dry_request->url_add('/collectors');
 	}
 	
-	/**
-	 * This is where the actual translation from DryRequest info to the actual client
-	 * is happening.
-	 * 
-	 * @param Util_DryRequest $DryRequest
-	 * TODO what do I return here? a dry response?
-	 */
-	abstract public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse;
+	protected function translate_to_model(\stdClass $single_item):Model_a{
+		return new Model_Collector($single_item);
+	}
 }
-
 
 
 /**
+ * Surveys client
+ * 
  * @author Itay Moav
- * @Date Nov 17 - 2017
+ * @date 17-11-2017
  */
-class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
-	
-	/**
-	 * I have it here for sake of documentation
-	 * 
-	 * @var \Zend\Http\Client
-	 */
-	protected $concrete_http_client = null;
-	
-	/**
-	 * This is where the actual translation from DryRequest info to the actual client
-	 * is happening.
-	 *
-	 * @param Util_DryRequest $DryRequest
-	 * @return Util_RawResponse
-	 */
-	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
-	/*	TODO Find a better way for loging injection echo "
-==================================================
-DOing " . $DryRequest->method() . ': ' . $DryRequest->url() . "
-
-
-
-";*/
-		$this->concrete_http_client->setMethod($DryRequest->method());
-		$this->concrete_http_client->setUri($DryRequest->url());
-		$this->concrete_http_client->setHeaders($DryRequest->headers());
-		
-		switch($DryRequest->method()){
-			case self::METHOD_GET:
-				break;
-				
-			default:
-				$body_encoded = json_encode($DryRequest->body());
-				$this->concrete_http_client->setRawBody($body_encoded);
-				break;
-		}
-		
-		$res = $this->concrete_http_client->send();
-		$Response = new Util_RawResponse;
-		$Response->http_code 			= $res->getStatusCode();
-		$Response->http_code_message	= $res->getReasonPhrase();
-		$Response->headers				= $res->getHeaders()->toArray();
-		$Response->body					= json_decode($res->getBody());
-		return $Response;
-	}
-}
-
-class Model_Survey extends Model_a{
-
-	protected function get_client():Client_a{
-		return (new SurveyMonkeyClient)->surveys($this->item_data->id);
-	}
-	
-	protected function set_if_fully_loaded(){
-		$this->is_fully_loaded = isset($this->item_data->id) && isset($this->item_data->response_count);
+class Client_Surveys extends Client_a{
+	protected function add_url_part():void{
+		$this->current_dry_request->url_add('/surveys');
 	}
 	
 	/**
-	 * Get the collectors client for the current survey
-	 * collectors
+	 * Drills into the current survey(s) collectors
+	 * Calling the collector client REQUIRES you to send a survey id
 	 * 
 	 * @param int $collector_id
 	 * @return Client_Collectors
 	 */
 	public function collectors(int $collector_id=0):Client_Collectors{
-		return $this->get_client()->collectors($collector_id);
-	}
-}
-
-class Model_Collector extends Model_a{
-	const REDIRECT_TYPE__URL	= 'url',
-		  REDIRECT_TYPE__CLOSE  = 'close',
-		  REDIRECT_TYPE__LOOP   = 'loop',
-		  		
-		  TYPE__WEBLINK			= 'weblink',
-		  TYPE__EMAIL			= 'email' 
-	;
-	
-	protected function get_client():Client_a{
-		return (new SurveyMonkeyClient)->collector($this->item_data->id);
-	}
-	
-	protected function set_if_fully_loaded(){
-		$this->is_fully_loaded = isset($this->item_data->id) && isset($this->item_data->date_created);
-	}
-	
-	/**
-	 * The url you redirect user to take survey
-	 * 
-	 * @return string
-	 */
-	public function url():string{
-		$this->fully_load();
-		return $this->item_data->url;
-	}
-}
-
-abstract class Model_a{
-
-	/**
-	 * When querying a collection (as opposed to one item by id) the result returns
-	 * the minimum needed fields.
-	 * To get the full item info, another request has to be done (with the full info url).
-	 * @var bool
-	 */
-	protected $is_fully_loaded = false;
-	
-	/**
-	 * The original data object from SM
-	 * @var \stdClass
-	 */
-	protected $item_data;
-	
-	/**
-	 * @param \stdClass $single_item Pre loaded data. If u create a new object, this can be null.
-	 */
-	public function __construct(\stdClass $single_item = null){
-		$this->item_data = $single_item??new \stdClass;
-		$this->set_if_fully_loaded();
-	}
-	
-	/**
-	 * Will fully load the item from SM and replace the existing item_data with the 
-	 * return result
-	 * 
-	 * @return Model_a
-	 */
-	public function fully_load():Model_a{
-		if(!$this->is_fully_loaded){
-			$this->item_data = $this->get_client()->get_one()->item_data;
-			$this->set_if_fully_loaded();
+		if(!$this->asset_id_received){
+			throw new \LogicException('Missing survey id when drilldown into collectors');
 		}
-		return $this;
-	}
-	
-	/**
-	 * CAREFULL - THIS IS read/write access, objects are transfered by REF.
-	 * 
-	 * @return \stdClass
-	 */
-	public function get_raw_data():\stdClass{
-		return $this->item_data;
-	}
-	
-	/**
-	 * When sending a model to a Client to create/update on SM
-	 * The response is the updated data. I will refresh the Model
-	 * with the new data.
-	 * 
-	 * @param \stdClass $raw_data
-	 * @return Model_a
-	 */
-	public function change_state(\stdClass $raw_data):Model_a{
-		$this->item_data       = $raw_data;
-		$this->is_fully_loaded = false;
-		$this->set_if_fully_loaded();
-		return $this;
+		//survey is a major object -> I reset the requests
+		$CollectorsClient = new Client_Collectors($this->current_dry_request);
+		$CollectorsClient->set_id($collector_id);
+		return $CollectorsClient;
 	}
 
 	/**
-	 * get method for item id
+	 * Load the survey fully with extrended details (pages and questions)
 	 * 
-	 * @return integer
+	 * @throws \LogicException
+	 * @return Client_Surveys current obj
 	 */
-	public function id():int{
-		return $this->item_data->id*1;
-	}
-	
-	/**
-	 * Sets the $is_fully_loaded flag according to the info found in item_data
-	 */
-	abstract protected function set_if_fully_loaded();
-	
-	/**
-	 * Returns a client where the current 
-	 * item is the top of the drill down.
-	 * 
-	 * @return Client_a
-	 */
-	abstract protected function get_client():Client_a;
-		
-}
-
-/**
- * Takes a raw resonse with a translatore and translates 
- * each element in raw response to it's model. 
- * Provide utilities to iterate over the collection of item
- * and to fetch the next/previous page
- * 
- * @author Itay Moav
- * @date   20-11-2017
- */
-class Util_Collection implements \Iterator,\Countable{
-	/**
-	 * Used to take the raw response and translate to the appropriate 
-	 * model object
-	 * 
-	 * @var callable
-	 */
-	private $translation_func;
-	
-	/**
-	 * Array of the data items fetched by the request
-	 * 
-	 * @var array
-	 */
-	private $data_collection = [];
-	
-	private $page = 1;
-	
-	private $page_size = 50;
-	
-	/**
-	 * Total entries/items 
-	 * 
-	 * @var integer
-	 */
-	private $total_entries_in_query = 1;
-	
-	/**
-	 * Url for the next page for this set
-	 * @var string
-	 */
-	private $link_next = '';
-	
-	/**
-	 * Url for the previous page, before this page
-	 * @var string
-	 */
-	private $link_previous = '';
-	
-	public function __construct(Util_RawResponse $RawResponse,callable $translation_func){
-		$this->parse_raw_response($RawResponse);
-		$this->translation_func = $translation_func;
-	}
-	
-	/**
-	 * Disects the response into the relevant 
-	 * members.
-	 * 
-	 * @param Util_RawResponse $RawResponse
-	 */
-	private function parse_raw_response(Util_RawResponse $RawResponse):void{
-		$this->error_handle($RawResponse->http_code,$RawResponse->http_code_message);
-				
-		//NOTICE! if the query fetches only one result, then the response wont have [data].
-		//It will have ONLY the one, fully loaded, object
-		if(isset($RawResponse->body->id) && $RawResponse->body->id){//one full object was returned
-			$this->data_collection 			= [$RawResponse->body];
-			$this->total_entries_in_query 	= 1;
-			$this->page_size 				= 1;
-			$this->page 					= 1;
-			$this->link_previous			= null;
-			$this->link_next				= null;
-		} else { //a real collection
-			$this->data_collection 			= $RawResponse->body->data;
-			$this->total_entries_in_query 	= $RawResponse->body->total;
-			$this->page_size 				= $RawResponse->body->per_page;
-			$this->page 					= $RawResponse->body->page;
-			$this->link_previous			= $RawResponse->body->prev??null;//at the edges u can still get null here 
-			$this->link_next				= $RawResponse->body->next??null;//at the edges u can still get null here
-		}
+	public function details():Client_Surveys{
+	    if(!$this->asset_id_received){
+	        throw new \LogicException('Missing survey id when drilldown into collectors');
+	    }
+	    $this->current_dry_request->url_add('/details');
+	    return $this;
 	}
 
-	public function count(){
-		return $this->total_entries_in_query; //CHECK THIS IS NOT THE GENERAL NUMBER FOR ALL PAGES
-	}
-	
-	public function current(){
-		$func = $this->translation_func;
-		return $func(current($this->data_collection));
-	}
-	
-	public function next(){
-		return next($this->data_collection);
-	}
-	
-	public function key(){
-		return key($this->data_collection);
-	}
-	
-	public function valid(){
-		return current($this->data_collection);
-	}
-	
-	public function rewind(){
-		reset($this->data_collection);
-	}
-	
 	/**
-	 * TODO remove this to proper place!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111111111111111111111111111111111111111111111111111111111111111111111111111
+	 * Sends the data of a single item to the right model class
 	 * 
-	 * @param int $http_code
-	 * @param string $http_message
-	 * @throws \RuntimeException
+	 * {@inheritDoc}
+	 * @see \Talisxtensions\TheKof\Client_a::translate_to_model()
 	 */
-	private function error_handle(int $http_code,string $http_message):void{
-		switch($http_code){
-			case 200:
-				break;
-			
-			default:
-				throw new \RuntimeException($http_message,$http_code);
-		}
-	}
-}
-
-
-/**
- * Data structure for holding a unified response object
- * from which ever http client u wish to use.
- * No fancy stuff, plain and simple.
- * 
- * @author Itay Moav
- * @date   17/11/2017
- *
- */
-class Util_RawResponse{
-	public $http_code,
-		   $http_code_message,
-		   $headers,
-		   $body
-	;
-	
-}
-
-
-/**
- * Data structure for holding a request details.
- * Usefull for mocking up tests, overriding the default use
- * of Zend FW for the HTTP request.
- * Very similar to the TalisMS Request object, but is to be used here internaly, no depndencies.
- * 
- * @author Itay Moav
- * @date   14/11/2017
- *
- */
-class Util_DryRequest{
-	
-	private $url,$method,$body,$headers;
-	
-	public function __construct($access_token){
-		$this->headers([
-				'Authorization' => "bearer {$access_token}",
-				'Content-type'  => 'application/json'
-		]);
-	}
-	
-	public function __toString(){
-		$res = new \stdClass;
-		$res->url     = $this->url;
-		$res->method  = $this->method;
-		$res->headers = $this->headers;
-		$res->body    = $this->body;
-		return json_encode($res);
-	}
-	
-	/**
-	 * Sets the url to input value
-	 * 
-	 * @param string $url
-	 * @return string url
-	 */
-	public function url(string $url=''):string{
-		return $this->url = $url?:$this->url;
-	}
-	
-	/**
-	 * Concats to the current url
-	 * 
-	 * @param string $concate_url
-	 * @return string the modified url
-	 */
-	public function url_add(string $concate_url):string{
-		return $this->url .= $concate_url;
-	}
-	
-	
-	public function method(string $method=''):string{
-		return $this->method= $method?:$this->method;
-	}
-	
-	public function body($body=null){
-		return $this->body = $body?:$this->body;
-	}
-	
-	public function headers(array $headers=[]):array{
-		return $this->headers = $headers?:$this->headers;
+	protected function translate_to_model(\stdClass $single_item):Model_a{
+		return new Model_Survey($single_item);
 	}
 }
 
@@ -550,7 +175,7 @@ abstract class Client_a{
 	 * @param int $page if zero, parameter will be ommited and SM defaults will be used
 	 * @param int $per_page if zero, parameter will be ommited and SM defaults will be used
 	 *
-	 * @return Util_Util_DryRequest
+	 * @return Util_DryRequest
 	 */
 	public function get_dry(int $page=0,int $per_page=0):Util_DryRequest{
 		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_GET);
@@ -700,61 +325,261 @@ abstract class Client_a{
 
 
 /**
- * Surveys client
- * 
  * @author Itay Moav
- * @date 17-11-2017
+ * @Date Nov 17 - 2017
  */
-class Client_Surveys extends Client_a{
-	protected function add_url_part():void{
-		$this->current_dry_request->url_add('/surveys');
+class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
+	
+	/**
+	 * I have it here for sake of documentation
+	 * 
+	 * @var \Zend\Http\Client
+	 */
+	protected $concrete_http_client = null;
+	
+	/**
+	 * This is where the actual translation from DryRequest info to the actual client
+	 * is happening.
+	 *
+	 * @param Util_DryRequest $DryRequest
+	 * @return Util_RawResponse
+	 */
+	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
+		echo "
+==================================================
+DOing " . $DryRequest->method() . ': ' . $DryRequest->url() . "
+
+
+
+";
+		$this->concrete_http_client->setMethod($DryRequest->method());
+		$this->concrete_http_client->setUri($DryRequest->url());
+		$this->concrete_http_client->setHeaders($DryRequest->headers());
+		
+		switch($DryRequest->method()){
+			case self::METHOD_GET:
+				break;
+				
+			default:
+				$body_encoded = json_encode($DryRequest->body());
+				$this->concrete_http_client->setRawBody($body_encoded);
+				break;
+		}
+		
+		$res = $this->concrete_http_client->send();
+		$Response = new Util_RawResponse;
+		$Response->http_code 			= $res->getStatusCode();
+		$Response->http_code_message	= $res->getReasonPhrase();
+		$Response->headers				= $res->getHeaders()->toArray();
+		$Response->body					= json_decode($res->getBody());
+		return $Response;
+	}
+}
+
+/**
+ * @author Itay Moav
+ * @Date Nov 17 - 2017
+ */
+abstract class HTTPClientWrapper_a{
+	/**
+	 * HTTP method types
+	 * 
+	 * @var string $METHOD_GET
+	 * @var string $METHOD_POST
+	 * @var string $METHOD_PUT
+	 * @var string $METHOD_DELETE
+	 * @var string $METHOD_OPTIONS
+	 * @var string $METHOD_HEAD
+	 */
+	const METHOD_GET	 = 'GET',
+		  METHOD_POST	 = 'POST',
+		  METHOD_PUT	 = 'PUT',
+		  METHOD_DELETE  = 'DELETE',
+		  METHOD_OPTIONS = 'OPTIONS',
+		  METHOD_HEAD	 = 'HEAD'
+	;
+	
+	/**
+	 * @var mixed the actual http client
+	 */
+	protected $concrete_http_client = null;
+
+	/**
+	 * Just send in the instantiated http client
+	 * 
+	 * @param mixed $concrete_http_client
+	 */
+	public function __construct($concrete_http_client){
+		$this->concrete_http_client = $concrete_http_client;
 	}
 	
 	/**
-	 * Drills into the current survey(s) collectors
-	 * Calling the collector client REQUIRES you to send a survey id
+	 * This is where the actual translation from DryRequest info to the actual client
+	 * is happening.
+	 * 
+	 * @param Util_DryRequest $DryRequest
+	 * TODO what do I return here? a dry response?
+	 */
+	abstract public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse;
+}
+
+
+
+class Model_Collector extends Model_a{
+	const REDIRECT_TYPE__URL	= 'url',
+		  REDIRECT_TYPE__CLOSE  = 'close',
+		  REDIRECT_TYPE__LOOP   = 'loop',
+		  		
+		  TYPE__WEBLINK			= 'weblink',
+		  TYPE__EMAIL			= 'email' 
+	;
+	
+	protected function get_client():Client_a{
+		return (new SurveyMonkeyClient)->collector($this->item_data->id);
+	}
+	
+	protected function set_if_fully_loaded(){
+		$this->is_fully_loaded = isset($this->item_data->id) && isset($this->item_data->date_created);
+	}
+	
+	/**
+	 * The url you redirect user to take survey
+	 * 
+	 * @return string
+	 */
+	public function url():string{
+		$this->fully_load();
+		return $this->item_data->url;
+	}
+}
+
+class Model_Survey extends Model_a{
+
+	protected function get_client():Client_a{
+		return (new SurveyMonkeyClient)->surveys($this->item_data->id);
+	}
+	
+	protected function set_if_fully_loaded(){
+		$this->is_fully_loaded = isset($this->item_data->id) && isset($this->item_data->response_count);
+	}
+	
+	/**
+	 * Get the collectors client for the current survey
+	 * collectors
 	 * 
 	 * @param int $collector_id
 	 * @return Client_Collectors
 	 */
 	public function collectors(int $collector_id=0):Client_Collectors{
-		if(!$this->asset_id_received){
-			throw new \LogicException('Missing survey id when drilldown into collectors');
+		return $this->get_client()->collectors($collector_id);
+	}
+	
+	/**
+	 * Load the current survey details, BEAWARE - this is another request!
+	 * 
+	 * @return Model_Survey
+	 */
+	public function details():Model_Survey{
+	    if(!isset($this->item_data->pages)){
+	        $this->item_data = $this->get_client()->details()->get_one()->item_data;
+	        $this->set_if_fully_loaded();
+	    }
+	    return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function title():string{
+	    return $this->item_data->title;
+	}
+}
+
+abstract class Model_a{
+
+	/**
+	 * When querying a collection (as opposed to one item by id) the result returns
+	 * the minimum needed fields.
+	 * To get the full item info, another request has to be done (with the full info url).
+	 * @var bool
+	 */
+	protected $is_fully_loaded = false;
+	
+	/**
+	 * The original data object from SM
+	 * @var \stdClass
+	 */
+	protected $item_data;
+	
+	/**
+	 * @param \stdClass $single_item Pre loaded data. If u create a new object, this can be null.
+	 */
+	public function __construct(\stdClass $single_item = null){
+		$this->item_data = $single_item??new \stdClass;
+		$this->set_if_fully_loaded();
+	}
+	
+	/**
+	 * Will fully load the item from SM and replace the existing item_data with the 
+	 * return result
+	 * 
+	 * @return Model_a
+	 */
+	public function fully_load():Model_a{
+		if(!$this->is_fully_loaded){
+			$this->item_data = $this->get_client()->get_one()->item_data;
+			$this->set_if_fully_loaded();
 		}
-		//survey is a major object -> I reset the requests
-		$CollectorsClient = new Client_Collectors($this->current_dry_request);
-		$CollectorsClient->set_id($collector_id);
-		return $CollectorsClient;
+		return $this;
+	}
+	
+	/**
+	 * CAREFULL - THIS IS read/write access, objects are transfered by REF.
+	 * 
+	 * @return \stdClass
+	 */
+	public function get_raw_data():\stdClass{
+		return $this->item_data;
+	}
+	
+	/**
+	 * When sending a model to a Client to create/update on SM
+	 * The response is the updated data. I will refresh the Model
+	 * with the new data.
+	 * 
+	 * @param \stdClass $raw_data
+	 * @return Model_a
+	 */
+	public function change_state(\stdClass $raw_data):Model_a{
+		$this->item_data       = $raw_data;
+		$this->is_fully_loaded = false;
+		$this->set_if_fully_loaded();
+		return $this;
 	}
 
 	/**
-	 * Sends the data of a single item to the right model class
+	 * get method for item id
 	 * 
-	 * {@inheritDoc}
-	 * @see \Talisxtensions\TheKof\Client_a::translate_to_model()
+	 * @return integer
 	 */
-	protected function translate_to_model(\stdClass $single_item):Model_a{
-		return new Model_Survey($single_item);
-	}
-}
-
-
-/**
- * Collectors client
- * 
- * @author Itay Moav
- * @date 17-11-2017
- */
-class Client_Collectors extends Client_a{
-	protected function add_url_part():void{
-		$this->current_dry_request->url_add('/collectors');
+	public function id():int{
+		return $this->item_data->id*1;
 	}
 	
-	protected function translate_to_model(\stdClass $single_item):Model_a{
-		return new Model_Collector($single_item);
-	}
+	/**
+	 * Sets the $is_fully_loaded flag according to the info found in item_data
+	 */
+	abstract protected function set_if_fully_loaded();
+	
+	/**
+	 * Returns a client where the current 
+	 * item is the top of the drill down.
+	 * 
+	 * @return Client_a
+	 */
+	abstract protected function get_client():Client_a;
+		
 }
-
 
 
 /**
@@ -827,4 +652,229 @@ class SurveyMonkeyClient extends Client_a{
 		$CollectorClient->set_id($collector_id);
 		return $CollectorClient;
 	}
+}
+
+
+/**
+ * Takes a raw resonse with a translatore and translates 
+ * each element in raw response to it's model. 
+ * Provide utilities to iterate over the collection of item
+ * and to fetch the next/previous page
+ * 
+ * @author Itay Moav
+ * @date   20-11-2017
+ */
+class Util_Collection implements \Iterator,\Countable{
+	/**
+	 * Used to take the raw response and translate to the appropriate 
+	 * model object
+	 * 
+	 * @var callable
+	 */
+	private $translation_func;
+	
+	/**
+	 * Array of the data items fetched by the request
+	 * 
+	 * @var array
+	 */
+	private $data_collection = [];
+	
+	private $page = 1;
+	
+	private $page_size = 50;
+	
+	/**
+	 * Total entries/items 
+	 * 
+	 * @var integer
+	 */
+	private $total_entries_in_query = 1;
+	
+	/**
+	 * Url for the next page for this set
+	 * @var string
+	 */
+	private $link_next = '';
+	
+	/**
+	 * Url for the previous page, before this page
+	 * @var string
+	 */
+	private $link_previous = '';
+	
+	public function __construct(Util_RawResponse $RawResponse,callable $translation_func){
+		$this->parse_raw_response($RawResponse);
+		$this->translation_func = $translation_func;
+	}
+	
+	/**
+	 * Disects the response into the relevant 
+	 * members.
+	 * 
+	 * @param Util_RawResponse $RawResponse
+	 */
+	private function parse_raw_response(Util_RawResponse $RawResponse):void{
+		$this->error_handle($RawResponse->http_code,$RawResponse->http_code_message);
+		
+		//NOTICE! if the query fetches only one result, then the response wont have [data].
+		//It will have ONLY the one, fully loaded, object
+		if(isset($RawResponse->body->id) && $RawResponse->body->id){//one full object was returned
+			$this->data_collection 			= [$RawResponse->body];
+			$this->total_entries_in_query 	= 1;
+			$this->page_size 				= 1;
+			$this->page 					= 1;
+			$this->link_previous			= null;
+			$this->link_next				= null;
+		} else { //a real collection
+			$this->data_collection 			= $RawResponse->body->data;
+			$this->total_entries_in_query 	= $RawResponse->body->total;
+			$this->page_size 				= $RawResponse->body->per_page;
+			$this->page 					= $RawResponse->body->page;
+			$this->link_previous			= $RawResponse->body->links->prev??null;//at the edges u can still get null here 
+			$this->link_next				= $RawResponse->body->links->next??null;//at the edges u can still get null here
+		}
+	}
+
+	public function count(){
+		return $this->total_entries_in_query; //CHECK THIS IS NOT THE GENERAL NUMBER FOR ALL PAGES
+	}
+	
+	public function current(){
+		$func = $this->translation_func;
+		return $func(current($this->data_collection));
+	}
+	
+	public function next(){
+		return next($this->data_collection);
+	}
+	
+	public function key(){
+		return key($this->data_collection);
+	}
+	
+	public function valid(){
+		return current($this->data_collection);
+	}
+	
+	public function rewind(){
+		reset($this->data_collection);
+	}
+	
+	/**
+	 * TODO remove this to proper place!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11111111111111111111111111111111111111111111111111111111111111111111111111111
+	 * 
+	 * @param int $http_code
+	 * @param string $http_message
+	 * @throws \RuntimeException
+	 */
+	private function error_handle(int $http_code,string $http_message):void{
+		switch($http_code){
+			case 200:
+				break;
+			
+			default:
+				throw new \RuntimeException($http_message,$http_code);
+		}
+	}
+	
+	/**
+	 * Returns the link for the next set in the current query
+	 * @return string|NULL
+	 */
+	public function next_link():?string{
+	    return $this->link_next;
+	}
+	
+	public function page(){
+	    return $this->page;
+	}
+	
+	public function page_size(){
+	    return $this->page_size;
+	}
+}
+
+
+/**
+ * Data structure for holding a request details.
+ * Usefull for mocking up tests, overriding the default use
+ * of Zend FW for the HTTP request.
+ * Very similar to the TalisMS Request object, but is to be used here internaly, no depndencies.
+ * 
+ * @author Itay Moav
+ * @date   14/11/2017
+ *
+ */
+class Util_DryRequest{
+	
+	private $url,$method,$body,$headers;
+	
+	public function __construct($access_token){
+		$this->headers([
+				'Authorization' => "bearer {$access_token}",
+				'Content-type'  => 'application/json'
+		]);
+	}
+	
+	public function __toString(){
+		$res = new \stdClass;
+		$res->url     = $this->url;
+		$res->method  = $this->method;
+		$res->headers = $this->headers;
+		$res->body    = $this->body;
+		return json_encode($res);
+	}
+	
+	/**
+	 * Sets the url to input value
+	 * 
+	 * @param string $url
+	 * @return string url
+	 */
+	public function url(string $url=''):string{
+		return $this->url = $url?:$this->url;
+	}
+	
+	/**
+	 * Concats to the current url
+	 * 
+	 * @param string $concate_url
+	 * @return string the modified url
+	 */
+	public function url_add(string $concate_url):string{
+		return $this->url .= $concate_url;
+	}
+	
+	
+	public function method(string $method=''):string{
+		return $this->method= $method?:$this->method;
+	}
+	
+	public function body($body=null){
+		return $this->body = $body?:$this->body;
+	}
+	
+	public function headers(array $headers=[]):array{
+		return $this->headers = $headers?:$this->headers;
+	}
+}
+
+
+/**
+ * Data structure for holding a unified response object
+ * from which ever http client u wish to use.
+ * No fancy stuff, plain and simple.
+ * 
+ * @author Itay Moav
+ * @date   17/11/2017
+ *
+ */
+class Util_RawResponse{
+	public $http_code,
+		   $http_code_message,
+		   $headers,
+		   $body
+	;
+	
 }

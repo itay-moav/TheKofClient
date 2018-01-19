@@ -104,7 +104,7 @@ abstract class Client_a{
 	 *
 	 * @return Util_DryRequest
 	 */
-	public function get_dry(int $page=0,int $per_page=0):Util_DryRequest{
+	public function get_dry(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_DryRequest{
 		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_GET);
 		if($page > 0){
 			$this->current_dry_request->url_add("{$this->query_separator_char}page={$page}");
@@ -113,6 +113,10 @@ abstract class Client_a{
 				$this->current_dry_request->url_add("{$this->query_separator_char}per_page={$per_page}");
 			}
 			
+		}
+		
+		if($query_part){
+		    $this->current_dry_request->url_add("{$this->query_separator_char}{$query_part}");
 		}
 		return $this->current_dry_request;
 	}
@@ -126,8 +130,8 @@ abstract class Client_a{
 	 * 
 	 * @return Util_Collection
 	 */
-	public function get(int $page=0,int $per_page=0):Util_Collection{
-		$this->get_dry($page,$per_page);
+	public function get(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_Collection{
+	    $this->get_dry($page,$per_page,$query_part);
 		return $this->build_asset(self::$HttpClientWrapper->execute_dry_request($this->current_dry_request));
 	}
 	

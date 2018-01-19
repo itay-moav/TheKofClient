@@ -28,6 +28,20 @@ class Client_Surveys extends Client_a{
 	}
 
 	/**
+	 * Load the survey fully with extrended details (pages and questions)
+	 * 
+	 * @throws \LogicException
+	 * @return Client_Surveys current obj
+	 */
+	public function details():Client_Surveys{
+	    if(!$this->asset_id_received){
+	        throw new \LogicException('Missing survey id when drilldown into collectors');
+	    }
+	    $this->current_dry_request->url_add('/details');
+	    return $this;
+	}
+
+	/**
 	 * Sends the data of a single item to the right model class
 	 * 
 	 * {@inheritDoc}
