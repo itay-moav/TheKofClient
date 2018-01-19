@@ -177,7 +177,7 @@ abstract class Client_a{
 	 *
 	 * @return Util_DryRequest
 	 */
-	public function get_dry(int $page=0,int $per_page=0):Util_DryRequest{
+	public function get_dry(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_DryRequest{
 		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_GET);
 		if($page > 0){
 			$this->current_dry_request->url_add("{$this->query_separator_char}page={$page}");
@@ -186,6 +186,10 @@ abstract class Client_a{
 				$this->current_dry_request->url_add("{$this->query_separator_char}per_page={$per_page}");
 			}
 			
+		}
+		
+		if($query_part){
+		    $this->current_dry_request->url_add("{$this->query_separator_char}{$query_part}");
 		}
 		return $this->current_dry_request;
 	}
@@ -199,8 +203,8 @@ abstract class Client_a{
 	 * 
 	 * @return Util_Collection
 	 */
-	public function get(int $page=0,int $per_page=0):Util_Collection{
-		$this->get_dry($page,$per_page);
+	public function get(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_Collection{
+	    $this->get_dry($page,$per_page,$query_part);
 		return $this->build_asset(self::$HttpClientWrapper->execute_dry_request($this->current_dry_request));
 	}
 	
@@ -325,6 +329,44 @@ abstract class Client_a{
 
 
 /**
+ * Help implementing the sort by for the query
+ * 
+ * @author itay
+ */
+class Client_QueryParts_SortBy implements Client_QueryParts_i{
+    const QUERY_SORT_ORDER__ASC     = 'ASC',
+          QUERY_SORT_ORDER__DESC    = 'DESC'
+    ;              
+    
+    private $sort_by    = '',
+            $sort_order = ''
+    ;
+    
+    /**
+     * @param string $order_by
+     * @param string $sort_order
+     */
+    public function __construct(string $sort_by,string $sort_order){
+        $this->sort_by    = $sort_by;
+        $this->sort_order = $sort_order;
+    }
+    
+    public function __toString(){
+        return "sort_by={$this->sort_by}&sort_order={$this->sort_order}";
+    }
+}
+
+
+
+/**
+ * @author itay
+ */
+interface Client_QueryParts_i{
+    public function __toString();
+}
+
+
+/**
  * @author Itay Moav
  * @Date Nov 17 - 2017
  */
@@ -345,13 +387,9 @@ class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
 	 * @return Util_RawResponse
 	 */
 	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
-		echo "
+ dbgn("
 ==================================================
-DOing " . $DryRequest->method() . ': ' . $DryRequest->url() . "
-
-
-
-";
+DOing " . $DryRequest->method() . ': ' . $DryRequest->url());
 		$this->concrete_http_client->setMethod($DryRequest->method());
 		$this->concrete_http_client->setUri($DryRequest->url());
 		$this->concrete_http_client->setHeaders($DryRequest->headers());
@@ -492,6 +530,28 @@ class Model_Survey extends Model_a{
 	 */
 	public function title():string{
 	    return $this->item_data->title;
+	}
+
+	/**
+	 * return array of the pages
+	 * carefull, this is by ref
+	 * 
+	 * @return array
+	 */
+	public function pages():array{
+	    return $this->details()->item_data->pages;
+	}
+	
+	/**
+	 * Returns all questions. this is a Generator
+	 */
+	public function all_questions(){
+	    $pages = $this->details()->item_data->pages;
+	    foreach($pages as $page){
+	        foreach($page->questions as $question){
+	            yield $question;
+	        }
+	    }
 	}
 }
 
