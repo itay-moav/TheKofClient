@@ -140,9 +140,9 @@ abstract class Client_a{
 	 * a collection, use this method, which will return the Model object for the specific item you are looking for.
 	 * It will also trigger the full data load on this object (TODO verify it is needed)
 	 * 
-	 * @return Model_a
+	 * @return ?Model_a returns null if no result available
 	 */
-	public function get_one():Model_a{
+	public function get_one():?Model_a{
 		return $this->get()->current();
 	}
 	

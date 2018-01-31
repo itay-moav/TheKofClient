@@ -48,8 +48,8 @@ class Util_Collection implements \Iterator,\Countable{
 	private $link_previous = '';
 	
 	public function __construct(Util_RawResponse $RawResponse,callable $translation_func){
-		$this->parse_raw_response($RawResponse);
 		$this->translation_func = $translation_func;
+		$this->parse_raw_response($RawResponse);
 	}
 	
 	/**
@@ -60,7 +60,6 @@ class Util_Collection implements \Iterator,\Countable{
 	 */
 	private function parse_raw_response(Util_RawResponse $RawResponse):void{
 		$this->error_handle($RawResponse->http_code,$RawResponse->http_code_message);
-		
 		//NOTICE! if the query fetches only one result, then the response wont have [data].
 		//It will have ONLY the one, fully loaded, object
 		if(isset($RawResponse->body->id) && $RawResponse->body->id){//one full object was returned
@@ -77,6 +76,9 @@ class Util_Collection implements \Iterator,\Countable{
 			$this->page 					= $RawResponse->body->page;
 			$this->link_previous			= $RawResponse->body->links->prev??null;//at the edges u can still get null here 
 			$this->link_next				= $RawResponse->body->links->next??null;//at the edges u can still get null here
+			if($this->total_entries_in_query === 0){
+				$this->translation_func = function($nothing){return null;};
+			}
 		}
 	}
 

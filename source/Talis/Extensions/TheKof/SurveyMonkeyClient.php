@@ -46,7 +46,7 @@ class SurveyMonkeyClient extends Client_a{
 	 * Initiate a surveys dry request
 	 * 
 	 * @param int $survey_id
-	 * @return SurveyMonkeyClient
+	 * @return Client_Surveys
 	 */
 	public function surveys(int $survey_id = 0):Client_Surveys{
 		$this->current_dry_request = new Util_DryRequest(self::$config['access_token']);
@@ -62,6 +62,7 @@ class SurveyMonkeyClient extends Client_a{
 	 * This is the top method
 	 * 
 	 * @param int $collector_id
+	 * @return Client_Collectors
 	 */
 	public function collector(int $collector_id):Client_Collectors{
 		$this->current_dry_request = new Util_DryRequest(self::$config['access_token']);
