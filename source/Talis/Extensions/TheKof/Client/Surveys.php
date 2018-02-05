@@ -26,6 +26,23 @@ class Client_Surveys extends Client_a{
 		$CollectorsClient->set_id($collector_id);
 		return $CollectorsClient;
 	}
+	
+	/**
+	 * Drills into the current survey(s) responses
+	 * Calling the responses client REQUIRES you to send a survey id
+	 *
+	 * @param int $response_id
+	 * @return Client_Responses
+	 */
+	public function responses(int $response_id=0):Client_Responses{
+	    if(!$this->asset_id_received){
+	        throw new \LogicException('Missing survey id when drilldown into responses');
+	    }
+	    //survey is a major object -> I reset the requests
+	    $ResponsesClient = new Client_Responses($this->current_dry_request);
+	    $ResponsesClient->set_id($response_id);
+	    return $ResponsesClient;
+	}
 
 	/**
 	 * Load the survey fully with extrended details (pages and questions)

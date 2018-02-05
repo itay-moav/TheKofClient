@@ -45,6 +45,23 @@ class Client_Surveys extends Client_a{
 		$CollectorsClient->set_id($collector_id);
 		return $CollectorsClient;
 	}
+	
+	/**
+	 * Drills into the current survey(s) responses
+	 * Calling the responses client REQUIRES you to send a survey id
+	 *
+	 * @param int $response_id
+	 * @return Client_Responses
+	 */
+	public function responses(int $response_id=0):Client_Responses{
+	    if(!$this->asset_id_received){
+	        throw new \LogicException('Missing survey id when drilldown into responses');
+	    }
+	    //survey is a major object -> I reset the requests
+	    $ResponsesClient = new Client_Responses($this->current_dry_request);
+	    $ResponsesClient->set_id($response_id);
+	    return $ResponsesClient;
+	}
 
 	/**
 	 * Load the survey fully with extrended details (pages and questions)
@@ -367,6 +384,23 @@ interface Client_QueryParts_i{
 
 
 /**
+ * Collectors client
+ * 
+ * @author Itay Moav
+ * @date 17-11-2017
+ */
+class Client_Responses extends Client_a{
+	protected function add_url_part():void{
+		$this->current_dry_request->url_add('/responses/bulk');
+	}
+	
+	protected function translate_to_model(\stdClass $single_item):Model_a{
+		return new Model_Response($single_item);
+	}
+}
+
+
+/**
  * @author Itay Moav
  * @Date Nov 17 - 2017
  */
@@ -387,9 +421,10 @@ class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
 	 * @return Util_RawResponse
 	 */
 	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
- dbgn("
+ echo ("
 ==================================================
-DOing " . $DryRequest->method() . ': ' . $DryRequest->url());
+DOing " . $DryRequest->method() . ': ' . $DryRequest->url()) . "
+";
 		$this->concrete_http_client->setMethod($DryRequest->method());
 		$this->concrete_http_client->setUri($DryRequest->url());
 		$this->concrete_http_client->setHeaders($DryRequest->headers());
@@ -639,6 +674,17 @@ abstract class Model_a{
 	 */
 	abstract protected function get_client():Client_a;
 		
+}
+
+class Model_Response extends Model_a{
+	
+	protected function get_client():Client_a{
+		return (new SurveyMonkeyClient)->collector($this->item_data->id);
+	}
+	
+	protected function set_if_fully_loaded(){
+		$this->is_fully_loaded = isset($this->item_data->id) && isset($this->item_data->date_created);
+	}
 }
 
 
