@@ -264,13 +264,51 @@ abstract class Client_a{
 	
 	/**
 	 * Alias for POST
-	 * 
+	 *
 	 * @param Model_a $model
 	 * @return Model_a
 	 */
 	public function create(Model_a $model):Model_a{
-		return $this->post($model);	
+	    return $this->post($model);
 	}
+	
+	/**
+	 * Patch is updating the current element.
+	 * I will use the entire existing raw_data to update.
+	 * This is not a single field selective update.
+	 * 
+	 * @param Model_a $model
+	 * @return Util_DryRequest
+	 */
+	public function patch_dry(\stdClass $sub_structure):Util_DryRequest{
+	    $this->current_dry_request->method(HTTPClientWrapper_a::METHOD_PATCH);
+	    $this->current_dry_request->body($sub_structure);
+	    return $this->current_dry_request;
+	}
+	
+	/**
+	 * Takes the current model, Use it to update current element in SM.
+	 *
+	 * @param model_a $model of the element we modify
+	 * @param \stdClass $sub_structure Just the part you wish to update encapsulated in a stdClass - see example update_one_survey_add_custome_variable.php
+	 * @return Model_a
+	 */
+	public function patch(Model_a $model,\stdClass $sub_structure):Model_a{
+	    $this->patch_dry($sub_structure);
+	    $raw_response = self::$HttpClientWrapper->execute_dry_request($this->current_dry_request);
+	    return $model->change_state($raw_response->body);
+	}
+	
+	/**
+	 * Alias to patch()
+	 * 
+	 * @param Model_a $model
+	 * @return Model_a
+	 */
+	public function update(Model_a $model):Model_a{
+	    return $this->patch($model);
+	}
+	
 	
 	/**
 	 * If requesting a specific id, add it to the url
@@ -463,13 +501,15 @@ abstract class HTTPClientWrapper_a{
 	 * @var string $METHOD_DELETE
 	 * @var string $METHOD_OPTIONS
 	 * @var string $METHOD_HEAD
+	 * @var string $METHOD_PATCH
 	 */
 	const METHOD_GET	 = 'GET',
 		  METHOD_POST	 = 'POST',
 		  METHOD_PUT	 = 'PUT',
 		  METHOD_DELETE  = 'DELETE',
 		  METHOD_OPTIONS = 'OPTIONS',
-		  METHOD_HEAD	 = 'HEAD'
+		  METHOD_HEAD	 = 'HEAD',
+		  METHOD_PATCH   = 'PATCH'
 	;
 	
 	/**
@@ -566,6 +606,17 @@ class Model_Survey extends Model_a{
 	public function title():string{
 	    return $this->item_data->title;
 	}
+	
+	/**
+	 * 
+	 * @return \stdClass
+	 */
+	public function custom_variables(?\stdClass $custome_variables=null):\stdClass{
+	    if($custome_variables){
+	        $this->item_data->custom_variables = $custome_variables;
+	    }
+	    return $this->item_data->custom_variables;
+	}
 
 	/**
 	 * return array of the pages
@@ -650,6 +701,17 @@ abstract class Model_a{
 		$this->is_fully_loaded = false;
 		$this->set_if_fully_loaded();
 		return $this;
+	}
+	
+	/**
+	 * updates the element in survey monkey
+	 * 
+	 * @param \stdClass $sub_structure is the part you want to modify. The members of this element correspond to the memebers in the raw_data object
+	 * @return Model_a this
+	 */
+	public function patch(\stdClass $sub_structure):Model_a{
+	    $this->get_client()->patch($this,$sub_structure);
+	    return $this;
 	}
 
 	/**

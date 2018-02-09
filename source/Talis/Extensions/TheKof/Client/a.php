@@ -174,13 +174,51 @@ abstract class Client_a{
 	
 	/**
 	 * Alias for POST
-	 * 
+	 *
 	 * @param Model_a $model
 	 * @return Model_a
 	 */
 	public function create(Model_a $model):Model_a{
-		return $this->post($model);	
+	    return $this->post($model);
 	}
+	
+	/**
+	 * Patch is updating the current element.
+	 * I will use the entire existing raw_data to update.
+	 * This is not a single field selective update.
+	 * 
+	 * @param Model_a $model
+	 * @return Util_DryRequest
+	 */
+	public function patch_dry(\stdClass $sub_structure):Util_DryRequest{
+	    $this->current_dry_request->method(HTTPClientWrapper_a::METHOD_PATCH);
+	    $this->current_dry_request->body($sub_structure);
+	    return $this->current_dry_request;
+	}
+	
+	/**
+	 * Takes the current model, Use it to update current element in SM.
+	 *
+	 * @param model_a $model of the element we modify
+	 * @param \stdClass $sub_structure Just the part you wish to update encapsulated in a stdClass - see example update_one_survey_add_custome_variable.php
+	 * @return Model_a
+	 */
+	public function patch(Model_a $model,\stdClass $sub_structure):Model_a{
+	    $this->patch_dry($sub_structure);
+	    $raw_response = self::$HttpClientWrapper->execute_dry_request($this->current_dry_request);
+	    return $model->change_state($raw_response->body);
+	}
+	
+	/**
+	 * Alias to patch()
+	 * 
+	 * @param Model_a $model
+	 * @return Model_a
+	 */
+	public function update(Model_a $model):Model_a{
+	    return $this->patch($model);
+	}
+	
 	
 	/**
 	 * If requesting a specific id, add it to the url

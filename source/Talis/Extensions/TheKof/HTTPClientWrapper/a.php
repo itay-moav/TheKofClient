@@ -13,13 +13,15 @@ abstract class HTTPClientWrapper_a{
 	 * @var string $METHOD_DELETE
 	 * @var string $METHOD_OPTIONS
 	 * @var string $METHOD_HEAD
+	 * @var string $METHOD_PATCH
 	 */
 	const METHOD_GET	 = 'GET',
 		  METHOD_POST	 = 'POST',
 		  METHOD_PUT	 = 'PUT',
 		  METHOD_DELETE  = 'DELETE',
 		  METHOD_OPTIONS = 'OPTIONS',
-		  METHOD_HEAD	 = 'HEAD'
+		  METHOD_HEAD	 = 'HEAD',
+		  METHOD_PATCH   = 'PATCH'
 	;
 	
 	/**

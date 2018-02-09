@@ -60,6 +60,17 @@ abstract class Model_a{
 		$this->set_if_fully_loaded();
 		return $this;
 	}
+	
+	/**
+	 * updates the element in survey monkey
+	 * 
+	 * @param \stdClass $sub_structure is the part you want to modify. The members of this element correspond to the memebers in the raw_data object
+	 * @return Model_a this
+	 */
+	public function patch(\stdClass $sub_structure):Model_a{
+	    $this->get_client()->patch($this,$sub_structure);
+	    return $this;
+	}
 
 	/**
 	 * get method for item id

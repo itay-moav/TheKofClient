@@ -39,6 +39,17 @@ class Model_Survey extends Model_a{
 	public function title():string{
 	    return $this->item_data->title;
 	}
+	
+	/**
+	 * 
+	 * @return \stdClass
+	 */
+	public function custom_variables(?\stdClass $custome_variables=null):\stdClass{
+	    if($custome_variables){
+	        $this->item_data->custom_variables = $custome_variables;
+	    }
+	    return $this->item_data->custom_variables;
+	}
 
 	/**
 	 * return array of the pages
