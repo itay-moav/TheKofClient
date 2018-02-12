@@ -1,5 +1,7 @@
 <?php namespace Talis\Extensions\TheKof;
 
+//TODO this is becomming the main system manager, might be good idea to remove the client dependency from it
+
 /**
  * Class is the "boss" of this entire system.
  * It provides the API to build and execute the queries to Survey monkey
@@ -9,16 +11,27 @@
  *
  */
 class SurveyMonkeyClient extends Client_a{
+    
+    /**
+     * Logger to use in TheKof code, by default it will be the ThirdPartyWrappers_Logger_EchoNative
+     * @var ThirdPartyWrappers_Logger_a
+     */
+    static public $L = null;
 	
 	/**
 	 * Init system and return a ready survey monkey client
 	 * 
 	 * @param array $config
-	 * @param HTTPClientWrapper_a $HttpClientWrapper
+	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
 	 * @return SurveyMonkeyClient
 	 */
-	static public function init(array $config,HTTPClientWrapper_a $HttpClientWrapper):SurveyMonkeyClient{
-		self::megatherion_init($config, $HttpClientWrapper);
+    static public function init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper,ThirdPartyWrappers_Logger_a $Logger = null):SurveyMonkeyClient{
+        if(!$Logger){
+            $Logger = new ThirdPartyWrappers_Logger_EchoNative;
+        }
+        self::$L = $Logger;
+        
+		self::megatherion_init($config, $HttpClientWrapper);//init the client
 		return new SurveyMonkeyClient;
 	}
 	

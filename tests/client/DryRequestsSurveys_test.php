@@ -1,5 +1,4 @@
-<?php
-use PHPUnit\Framework\TestCase;
+<?php use PHPUnit\Framework\TestCase;
 
 
 /**
@@ -30,7 +29,7 @@ class DryRequestsSurveys_test extends TestCase {
 		$expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}";
 		$ExpectedDryRequest = new \Talis\Extensions\TheKof\Util_DryRequest(Env::$survey_monkey_config['access_token']);
 		$ExpectedDryRequest->url($expected_url);
-		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\HTTPClientWrapper_a::METHOD_GET);
+		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
 		
 		$ActualDryRequest = $Client->surveys($fake_survey_id)->get_dry();
 		$this->assertInstanceOf(\Talis\Extensions\TheKof\Util_DryRequest::class, $ActualDryRequest,'Dry request must return a \Talis\Extensions\TheKof\DryRequest object');
@@ -44,7 +43,7 @@ class DryRequestsSurveys_test extends TestCase {
 		$expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}?page=1";
 		$ExpectedDryRequest = new \Talis\Extensions\TheKof\Util_DryRequest(Env::$survey_monkey_config['access_token']);
 		$ExpectedDryRequest->url($expected_url);
-		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\HTTPClientWrapper_a::METHOD_GET);
+		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
 		
 		$ActualDryRequest = $Client->surveys($fake_survey_id)->get_dry(1);
 		$this->assertEquals($ExpectedDryRequest,$ActualDryRequest,'(page 1) response structure is not same');
@@ -58,7 +57,7 @@ class DryRequestsSurveys_test extends TestCase {
 		$expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}?page=2&per_page=10";
 		$ExpectedDryRequest = new \Talis\Extensions\TheKof\Util_DryRequest(Env::$survey_monkey_config['access_token']);
 		$ExpectedDryRequest->url($expected_url);
-		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\HTTPClientWrapper_a::METHOD_GET);
+		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
 		
 		$ActualDryRequest = $Client->surveys($fake_survey_id)->get_dry(2,10);
 		$this->assertEquals($ExpectedDryRequest,$ActualDryRequest,'(page 2,10) response structure is not same');
@@ -66,5 +65,46 @@ class DryRequestsSurveys_test extends TestCase {
 		$this->assertEquals($expected_url, $ActualDryRequest->url(),'url does not match');
 		$this->assertEquals('GET', $ActualDryRequest->method(),'METHOD does not match');
 		$this->assertEquals($headers, $ActualDryRequest->headers(),'headers do not match');
+	}
+	
+	public function testPatchDryRequest(){
+	    dbgn('Testing PATCH');
+	    // init
+	    $access_token = Env::$survey_monkey_config['access_token'];
+	    $Client = tests_get_proper_client();
+	    $fake_survey_id = 1234;
+	    $headers = [
+	        'Authorization' => "bearer {$access_token}",
+	        'Content-type'  => 'application/json'
+	    ];
+	    
+	    /**
+	     * Testing for switching/adding custom variables
+	     * @var stdClass $raw_data
+	     */
+	    $patch_data = new stdClass;
+	    $patch_data->custom_variables = new stdClass;
+	    $patch_data->custom_variables->test1 = 'test1lbl';
+	    $patch_data->custom_variables->test2 = 'test2lbl';
+	    
+	    
+	    // TESTS
+	    
+	    //patch new custome variables - see request is legit
+	    $expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}";
+	    $ExpectedDryRequest = new \Talis\Extensions\TheKof\Util_DryRequest(Env::$survey_monkey_config['access_token']);
+	    $ExpectedDryRequest->url($expected_url);
+	    $ExpectedDryRequest->method(\Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a::METHOD_PATCH);
+	    $ExpectedDryRequest->body($patch_data);
+	    
+	    $ActualDryRequest = $Client->surveys($fake_survey_id)->patch_dry($patch_data);
+	    
+	    $this->assertInstanceOf(\Talis\Extensions\TheKof\Util_DryRequest::class, $ActualDryRequest,'patch_dry method must return a \Talis\Extensions\TheKof\DryRequest object');
+	    $this->assertEquals($ExpectedDryRequest,    $ActualDryRequest,            'response structure is not same');
+	    $this->assertEquals($expected_url,          $ActualDryRequest->url(),     'url does not match');
+	    $this->assertEquals('PATCH',                $ActualDryRequest->method(),  'METHOD does not match');
+	    $this->assertEquals($headers,               $ActualDryRequest->headers(), 'headers do not match');
+	    $this->assertEquals($patch_data,            $ActualDryRequest->body(),    'Body does not match');
+	    
 	}
 }

@@ -111,7 +111,7 @@ abstract class Client_a{
 	 * Make sure to configure that object ahead of sending it to this class
 	 * with the actual http client
 	 *
-	 * @var HTTPClientWrapper_a
+	 * @var ThirdPartyWrappers_HTTPClient_a
 	 */
 	static protected $HttpClientWrapper = null;
 	
@@ -120,10 +120,10 @@ abstract class Client_a{
 	 * The values entered here are gobal and immutable
 	 * 
 	 * @param array $config
-	 * @param HTTPClientWrapper_a $HttpClientWrapper
+	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
 	 * @throws \InvalidArgumentException
 	 */
-	static public function megatherion_init(array $config,HTTPClientWrapper_a $HttpClientWrapper){
+	static public function megatherion_init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper){
 		self::megatherion_validate_config_attributes($config);
 		self::$config = $config;
 		self::$HttpClientWrapper = $HttpClientWrapper;
@@ -173,7 +173,7 @@ abstract class Client_a{
 	
 	/**
 	 * @param array $config
-	 * @param HTTPClientWrapper_a $HttpClientWrapper
+	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
 	 * @param Util_DryRequest $current_dry_request bubbled from the previous client
 	 * 
 	 * @throws \InvalidArgumentException
@@ -195,7 +195,7 @@ abstract class Client_a{
 	 * @return Util_DryRequest
 	 */
 	public function get_dry(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_DryRequest{
-		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_GET);
+		$this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
 		if($page > 0){
 			$this->current_dry_request->url_add("{$this->query_separator_char}page={$page}");
 			$this->query_separator_char = '&';
@@ -243,7 +243,7 @@ abstract class Client_a{
 	 * @return Util_DryRequest
 	 */
 	public function post_dry(Model_a $model):Util_DryRequest{
-		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_POST);
+		$this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_POST);
 		$this->current_dry_request->body($model->get_raw_data());
 		return $this->current_dry_request;
 		
@@ -281,7 +281,7 @@ abstract class Client_a{
 	 * @return Util_DryRequest
 	 */
 	public function patch_dry(\stdClass $sub_structure):Util_DryRequest{
-	    $this->current_dry_request->method(HTTPClientWrapper_a::METHOD_PATCH);
+	    $this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_PATCH);
 	    $this->current_dry_request->body($sub_structure);
 	    return $this->current_dry_request;
 	}
@@ -436,106 +436,6 @@ class Client_Responses extends Client_a{
 		return new Model_Response($single_item);
 	}
 }
-
-
-/**
- * @author Itay Moav
- * @Date Nov 17 - 2017
- */
-class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
-	
-	/**
-	 * I have it here for sake of documentation
-	 * 
-	 * @var \Zend\Http\Client
-	 */
-	protected $concrete_http_client = null;
-	
-	/**
-	 * This is where the actual translation from DryRequest info to the actual client
-	 * is happening.
-	 *
-	 * @param Util_DryRequest $DryRequest
-	 * @return Util_RawResponse
-	 */
-	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
- echo ("
-==================================================
-DOing " . $DryRequest->method() . ': ' . $DryRequest->url()) . "
-";
-		$this->concrete_http_client->setMethod($DryRequest->method());
-		$this->concrete_http_client->setUri($DryRequest->url());
-		$this->concrete_http_client->setHeaders($DryRequest->headers());
-		
-		switch($DryRequest->method()){
-			case self::METHOD_GET:
-				break;
-				
-			default:
-				$body_encoded = json_encode($DryRequest->body());
-				$this->concrete_http_client->setRawBody($body_encoded);
-				break;
-		}
-		
-		$res = $this->concrete_http_client->send();
-		$Response = new Util_RawResponse;
-		$Response->http_code 			= $res->getStatusCode();
-		$Response->http_code_message	= $res->getReasonPhrase();
-		$Response->headers				= $res->getHeaders()->toArray();
-		$Response->body					= json_decode($res->getBody());
-		return $Response;
-	}
-}
-
-/**
- * @author Itay Moav
- * @Date Nov 17 - 2017
- */
-abstract class HTTPClientWrapper_a{
-	/**
-	 * HTTP method types
-	 * 
-	 * @var string $METHOD_GET
-	 * @var string $METHOD_POST
-	 * @var string $METHOD_PUT
-	 * @var string $METHOD_DELETE
-	 * @var string $METHOD_OPTIONS
-	 * @var string $METHOD_HEAD
-	 * @var string $METHOD_PATCH
-	 */
-	const METHOD_GET	 = 'GET',
-		  METHOD_POST	 = 'POST',
-		  METHOD_PUT	 = 'PUT',
-		  METHOD_DELETE  = 'DELETE',
-		  METHOD_OPTIONS = 'OPTIONS',
-		  METHOD_HEAD	 = 'HEAD',
-		  METHOD_PATCH   = 'PATCH'
-	;
-	
-	/**
-	 * @var mixed the actual http client
-	 */
-	protected $concrete_http_client = null;
-
-	/**
-	 * Just send in the instantiated http client
-	 * 
-	 * @param mixed $concrete_http_client
-	 */
-	public function __construct($concrete_http_client){
-		$this->concrete_http_client = $concrete_http_client;
-	}
-	
-	/**
-	 * This is where the actual translation from DryRequest info to the actual client
-	 * is happening.
-	 * 
-	 * @param Util_DryRequest $DryRequest
-	 * TODO what do I return here? a dry response?
-	 */
-	abstract public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse;
-}
-
 
 
 class Model_Collector extends Model_a{
@@ -750,6 +650,8 @@ class Model_Response extends Model_a{
 }
 
 
+//TODO this is becomming the main system manager, might be good idea to remove the client dependency from it
+
 /**
  * Class is the "boss" of this entire system.
  * It provides the API to build and execute the queries to Survey monkey
@@ -759,16 +661,27 @@ class Model_Response extends Model_a{
  *
  */
 class SurveyMonkeyClient extends Client_a{
+    
+    /**
+     * Logger to use in TheKof code, by default it will be the ThirdPartyWrappers_Logger_EchoNative
+     * @var ThirdPartyWrappers_Logger_a
+     */
+    static public $L = null;
 	
 	/**
 	 * Init system and return a ready survey monkey client
 	 * 
 	 * @param array $config
-	 * @param HTTPClientWrapper_a $HttpClientWrapper
+	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
 	 * @return SurveyMonkeyClient
 	 */
-	static public function init(array $config,HTTPClientWrapper_a $HttpClientWrapper):SurveyMonkeyClient{
-		self::megatherion_init($config, $HttpClientWrapper);
+    static public function init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper,ThirdPartyWrappers_Logger_a $Logger = null):SurveyMonkeyClient{
+        if(!$Logger){
+            $Logger = new ThirdPartyWrappers_Logger_EchoNative;
+        }
+        self::$L = $Logger;
+        
+		self::megatherion_init($config, $HttpClientWrapper);//init the client
 		return new SurveyMonkeyClient;
 	}
 	
@@ -1047,5 +960,216 @@ class Util_Collection implements \Iterator,\Countable{
 	
 	public function page_size(){
 	    return $this->page_size;
+	}
+}
+
+
+/**
+ * @author Itay Moav
+ * @Date Nov 17 - 2017
+ */
+abstract class ThirdPartyWrappers_HTTPClient_a{
+	/**
+	 * HTTP method types
+	 * 
+	 * @var string $METHOD_GET
+	 * @var string $METHOD_POST
+	 * @var string $METHOD_PUT
+	 * @var string $METHOD_DELETE
+	 * @var string $METHOD_OPTIONS
+	 * @var string $METHOD_HEAD
+	 * @var string $METHOD_PATCH
+	 */
+	const METHOD_GET	 = 'GET',
+		  METHOD_POST	 = 'POST',
+		  METHOD_PUT	 = 'PUT',
+		  METHOD_DELETE  = 'DELETE',
+		  METHOD_OPTIONS = 'OPTIONS',
+		  METHOD_HEAD	 = 'HEAD',
+		  METHOD_PATCH   = 'PATCH'
+	;
+	
+	/**
+	 * @var mixed the actual http client
+	 */
+	protected $concrete_http_client = null;
+
+	/**
+	 * Just send in the instantiated http client
+	 * 
+	 * @param mixed $concrete_http_client
+	 */
+	public function __construct($concrete_http_client){
+		$this->concrete_http_client = $concrete_http_client;
+	}
+	
+	/**
+	 * This is where the actual translation from DryRequest info to the actual client
+	 * is happening.
+	 * 
+	 * @param \Talisxtensions\TheKof\Util_DryRequest $DryRequest
+	 * TODO what do I return here? a dry response?
+	 */
+	abstract public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse;
+}
+
+
+
+/**
+ * @author Itay Moav
+ * @Date Nov 17 - 2017
+ */
+class ThirdPartyWrappers_HTTPClient_ZendFW2 extends ThirdPartyWrappers_HTTPClient_a{
+	
+	/**
+	 * I have it here for sake of documentation
+	 * 
+	 * @var \Zend\Http\Client
+	 */
+	protected $concrete_http_client = null;
+	
+	/**
+	 * This is where the actual translation from DryRequest info to the actual client
+	 * is happening.
+	 *
+	 * @param \Talisxtensions\TheKof\Util_DryRequest $DryRequest
+	 * @return \Talisxtensions\TheKof\Util_RawResponse
+	 */
+	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
+	    SurveyMonkeyClient::$L->debug("
+==================================================
+DOing " . $DryRequest->method() . ': ' . $DryRequest->url());
+	    
+		$this->concrete_http_client->setMethod($DryRequest->method());
+		$this->concrete_http_client->setUri($DryRequest->url());
+		$this->concrete_http_client->setHeaders($DryRequest->headers());
+		
+		switch($DryRequest->method()){
+			case self::METHOD_GET:
+				break;
+				
+			default:
+				$body_encoded = json_encode($DryRequest->body());
+				$this->concrete_http_client->setRawBody($body_encoded);
+				break;
+		}
+		
+		$res = $this->concrete_http_client->send();
+		$Response = new Util_RawResponse;
+		$Response->http_code 			= $res->getStatusCode();
+		$Response->http_code_message	= $res->getReasonPhrase();
+		$Response->headers				= $res->getHeaders()->toArray();
+		$Response->body					= json_decode($res->getBody());
+		return $Response;
+	}
+}
+
+/**
+ * There are different loggers out there, you might have your own.
+ * You can use your own logger with TheKof, just create
+ * and adapter between your logger and TheKof and set it up in init
+ * 
+ * If your logger is a bunch of functions, you will need to wrap them in a class or array
+ * of functions before sending them to the adapter
+ * 
+ * This logger supports five levels of log output
+ * - debug
+ * - info
+ * - warning
+ * - error
+ * - fatal
+ * 
+ * Check Examples
+ * 
+ * @author Itay Moav
+ * @Date 12-02-2018
+ */
+abstract class ThirdPartyWrappers_Logger_a{
+	
+	/**
+	 * @var mixed the actual Logger class
+	 */
+	protected $concrete_logger_class = null;
+
+	/**
+	 * Just send in the instantiated with logger
+	 * 
+	 * @param mixed $concrete_logger_class
+	 */
+	public function __construct($concrete_logger_class = null){
+	    $this->concrete_logger_class = $concrete_logger_class;
+	}
+	
+	/****************************************************************************************************
+	 * The following methods are what you have to implement.
+	 * They will all get a message (string) and an optional data structure I will print_r($data,true)
+	 * What you do with those, is yours to decide.
+	 ****************************************************************************************************/
+	
+	abstract public function debug(string $msg,$data_structure=null):void;
+	
+	abstract public function info(string $msg,$data_structure=null):void;
+	
+	abstract public function warning(string $msg,$data_structure=null):void;
+	
+	abstract public function error(string $msg,$data_structure=null):void;
+	
+	abstract public function fatal(string $msg,$data_structure=null):void;
+}
+
+
+
+/**
+ * The default logger - just echoes to stdio
+ * 
+ * @author Itay Moav
+ * @Date 12-02-2018
+ */
+class ThirdPartyWrappers_Logger_EchoNative extends ThirdPartyWrappers_Logger_a{
+	
+	/****************************************************************************************************
+	 * The following methods are what you have to implement.
+	 * They will all get a message (string) and an optional data structure I will print_r($data,true)
+	 * What you do with those, is yours to decide.
+	 ****************************************************************************************************/
+	
+	public function debug(string $msg,$data_structure=null):void{
+	    echo $msg . "
+";
+	    if($data_structure){
+	        print_r($data_structure);
+	    }
+	}
+	
+	public function info(string $msg,$data_structure=null):void{
+	    echo $msg . "
+";
+	    if($data_structure){
+	        print_r($data_structure);
+	    }
+	}
+	
+	public function warning(string $msg,$data_structure=null):void{
+	    echo $msg . "
+";
+	    if($data_structure){
+	        print_r($data_structure);
+	    }
+	}
+	
+	public function error(string $msg,$data_structure=null):void{
+	    echo $msg . "
+";
+	    if($data_structure){
+	        print_r($data_structure);
+	    }
+	}
+	
+	public function fatal(string $msg,$data_structure=null):void{
+	    echo $msg . "
+";
+	    if($data_structure){
+	        print_r($data_structure);
+	    }
 	}
 }

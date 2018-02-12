@@ -21,7 +21,7 @@ abstract class Client_a{
 	 * Make sure to configure that object ahead of sending it to this class
 	 * with the actual http client
 	 *
-	 * @var HTTPClientWrapper_a
+	 * @var ThirdPartyWrappers_HTTPClient_a
 	 */
 	static protected $HttpClientWrapper = null;
 	
@@ -30,10 +30,10 @@ abstract class Client_a{
 	 * The values entered here are gobal and immutable
 	 * 
 	 * @param array $config
-	 * @param HTTPClientWrapper_a $HttpClientWrapper
+	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
 	 * @throws \InvalidArgumentException
 	 */
-	static public function megatherion_init(array $config,HTTPClientWrapper_a $HttpClientWrapper){
+	static public function megatherion_init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper){
 		self::megatherion_validate_config_attributes($config);
 		self::$config = $config;
 		self::$HttpClientWrapper = $HttpClientWrapper;
@@ -83,7 +83,7 @@ abstract class Client_a{
 	
 	/**
 	 * @param array $config
-	 * @param HTTPClientWrapper_a $HttpClientWrapper
+	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
 	 * @param Util_DryRequest $current_dry_request bubbled from the previous client
 	 * 
 	 * @throws \InvalidArgumentException
@@ -105,7 +105,7 @@ abstract class Client_a{
 	 * @return Util_DryRequest
 	 */
 	public function get_dry(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_DryRequest{
-		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_GET);
+		$this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
 		if($page > 0){
 			$this->current_dry_request->url_add("{$this->query_separator_char}page={$page}");
 			$this->query_separator_char = '&';
@@ -153,7 +153,7 @@ abstract class Client_a{
 	 * @return Util_DryRequest
 	 */
 	public function post_dry(Model_a $model):Util_DryRequest{
-		$this->current_dry_request->method(HTTPClientWrapper_a::METHOD_POST);
+		$this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_POST);
 		$this->current_dry_request->body($model->get_raw_data());
 		return $this->current_dry_request;
 		
@@ -191,7 +191,7 @@ abstract class Client_a{
 	 * @return Util_DryRequest
 	 */
 	public function patch_dry(\stdClass $sub_structure):Util_DryRequest{
-	    $this->current_dry_request->method(HTTPClientWrapper_a::METHOD_PATCH);
+	    $this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_PATCH);
 	    $this->current_dry_request->body($sub_structure);
 	    return $this->current_dry_request;
 	}

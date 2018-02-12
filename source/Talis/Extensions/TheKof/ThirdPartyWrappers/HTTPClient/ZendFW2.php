@@ -3,7 +3,7 @@
  * @author Itay Moav
  * @Date Nov 17 - 2017
  */
-class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
+class ThirdPartyWrappers_HTTPClient_ZendFW2 extends ThirdPartyWrappers_HTTPClient_a{
 	
 	/**
 	 * I have it here for sake of documentation
@@ -16,11 +16,12 @@ class HTTPClientWrapper_ZendFW2 extends HTTPClientWrapper_a{
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 *
-	 * @param Util_DryRequest $DryRequest
-	 * @return Util_RawResponse
+	 * @param \Talis\Extensions\TheKof\Util_DryRequest $DryRequest
+	 * @return \Talis\Extensions\TheKof\Util_RawResponse
 	 */
 	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
- echo ("\n==================================================\nDOing " . $DryRequest->method() . ': ' . $DryRequest->url()) . "\n";
+	    SurveyMonkeyClient::$L->debug("\n==================================================\nDOing " . $DryRequest->method() . ': ' . $DryRequest->url());
+	    
 		$this->concrete_http_client->setMethod($DryRequest->method());
 		$this->concrete_http_client->setUri($DryRequest->url());
 		$this->concrete_http_client->setHeaders($DryRequest->headers());

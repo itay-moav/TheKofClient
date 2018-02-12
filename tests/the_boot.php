@@ -24,7 +24,7 @@ require_once '../bundle/thekofclient.php';
  * @author Itay Moav
  * @Date Dec 8 - 2017
  */
-class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\HTTPClientWrapper_a{
+class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a{
 	
 	public function __construct(){
 		$this->concrete_http_client = null;
@@ -34,8 +34,8 @@ class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\HTTPClientWrapper_a
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 *
-	 * @param Util_DryRequest $DryRequest
-	 * @return Util_RawResponse
+	 * @param \Talis\Extensions\TheKof\Util_DryRequest $DryRequest
+	 * @return \Talis\Extensions\TheKof\Util_RawResponse
 	 */
 	public function execute_dry_request(\Talis\Extensions\TheKof\Util_DryRequest $DryRequest):\Talis\Extensions\TheKof\Util_RawResponse{
 		echo "\n==================================================\nDOing " . $DryRequest->url() . "\n\n\n\n";
@@ -52,6 +52,3 @@ class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\HTTPClientWrapper_a
 function tests_get_proper_client(){
 	return Talis\Extensions\TheKof\SurveyMonkeyClient::init(Env::$survey_monkey_config,new TestHTTPClientWrapper);
 }
-
-
-
