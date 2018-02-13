@@ -447,7 +447,13 @@ class Model_Collector extends Model_a{
 		  TYPE__EMAIL			= 'email' 
 	;
 	
-	protected function get_client():Client_a{
+	/**
+	 * Returns a client where the current 
+	 * item is the top of the drill down.
+	 * 
+	 * @return Client_Collectors
+	 */
+	protected function get_client():Client_Collectors{
 		return (new SurveyMonkeyClient)->collector($this->item_data->id);
 	}
 	
@@ -468,7 +474,13 @@ class Model_Collector extends Model_a{
 
 class Model_Survey extends Model_a{
 
-	protected function get_client():Client_a{
+    /**
+     * Returns a client where the current 
+	 * item is the top of the drill down.
+	 * 
+     * @return Client_Surveys
+     */
+	protected function get_client():Client_Surveys{
 		return (new SurveyMonkeyClient)->surveys($this->item_data->id);
 	}
 	
@@ -484,7 +496,17 @@ class Model_Survey extends Model_a{
 	 * @return Client_Collectors
 	 */
 	public function collectors(int $collector_id=0):Client_Collectors{
-		return $this->get_client()->collectors($collector_id);
+	    return $this->get_client()->collectors($collector_id);
+	}
+	
+	/**
+	 * get the drill down responses client
+	 * 
+	 * @param int $response_id
+	 * @return Client_Responses
+	 */
+	public function responses(int $response_id=0):Client_Responses{
+	    return $this->get_client()->responses($response_id);
 	}
 	
 	/**
@@ -504,7 +526,16 @@ class Model_Survey extends Model_a{
 	 * @return string
 	 */
 	public function title():string{
-	    return $this->item_data->title;
+	    return $this->get_raw_data()->title;
+	}
+	
+	/**
+	 * The preview link for this survey
+	 * 
+	 * @return string
+	 */
+	public function preview():string{
+	    return $this->details()->get_raw_data()->preview;
 	}
 	
 	/**
@@ -525,14 +556,14 @@ class Model_Survey extends Model_a{
 	 * @return array
 	 */
 	public function pages():array{
-	    return $this->details()->item_data->pages;
+	    return $this->details()->get_raw_data()->pages;
 	}
 	
 	/**
 	 * Returns all questions. this is a Generator
 	 */
 	public function all_questions(){
-	    $pages = $this->details()->item_data->pages;
+	    $pages = $this->details()->get_raw_data()->pages;
 	    foreach($pages as $page){
 	        foreach($page->questions as $question){
 	            yield $question;
@@ -627,25 +658,24 @@ abstract class Model_a{
 	 * Sets the $is_fully_loaded flag according to the info found in item_data
 	 */
 	abstract protected function set_if_fully_loaded();
-	
-	/**
-	 * Returns a client where the current 
-	 * item is the top of the drill down.
-	 * 
-	 * @return Client_a
-	 */
-	abstract protected function get_client():Client_a;
-		
 }
 
 class Model_Response extends Model_a{
-	
-	protected function get_client():Client_a{
-		return (new SurveyMonkeyClient)->collector($this->item_data->id);
+    
+	protected function set_if_fully_loaded(){
+	    $this->is_fully_loaded = true;//It has only a full view mode
 	}
 	
-	protected function set_if_fully_loaded(){
-		$this->is_fully_loaded = isset($this->item_data->id) && isset($this->item_data->date_created);
+	/**
+	 * Formats the responses into an array indexed by 
+	 * question id and has the question text in it
+	 * 
+	 * @param Model_Survey $SurveyModel
+	 * @return array
+	 */
+	public function get_response_with_question_text(Model_Survey $SurveyModel):array{
+	   SurveyMonkeyClient::$L->debug('RAW',$this->get_raw_data());
+	   return [];
 	}
 }
 

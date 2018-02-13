@@ -85,13 +85,4 @@ abstract class Model_a{
 	 * Sets the $is_fully_loaded flag according to the info found in item_data
 	 */
 	abstract protected function set_if_fully_loaded();
-	
-	/**
-	 * Returns a client where the current 
-	 * item is the top of the drill down.
-	 * 
-	 * @return Client_a
-	 */
-	abstract protected function get_client():Client_a;
-		
 }

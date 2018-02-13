@@ -8,7 +8,13 @@ class Model_Collector extends Model_a{
 		  TYPE__EMAIL			= 'email' 
 	;
 	
-	protected function get_client():Client_a{
+	/**
+	 * Returns a client where the current 
+	 * item is the top of the drill down.
+	 * 
+	 * @return Client_Collectors
+	 */
+	protected function get_client():Client_Collectors{
 		return (new SurveyMonkeyClient)->collector($this->item_data->id);
 	}
 	

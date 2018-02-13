@@ -1,7 +1,13 @@
 <?php namespace Talis\Extensions\TheKof;
 class Model_Survey extends Model_a{
 
-	protected function get_client():Client_a{
+    /**
+     * Returns a client where the current 
+	 * item is the top of the drill down.
+	 * 
+     * @return Client_Surveys
+     */
+	protected function get_client():Client_Surveys{
 		return (new SurveyMonkeyClient)->surveys($this->item_data->id);
 	}
 	
@@ -17,7 +23,17 @@ class Model_Survey extends Model_a{
 	 * @return Client_Collectors
 	 */
 	public function collectors(int $collector_id=0):Client_Collectors{
-		return $this->get_client()->collectors($collector_id);
+	    return $this->get_client()->collectors($collector_id);
+	}
+	
+	/**
+	 * get the drill down responses client
+	 * 
+	 * @param int $response_id
+	 * @return Client_Responses
+	 */
+	public function responses(int $response_id=0):Client_Responses{
+	    return $this->get_client()->responses($response_id);
 	}
 	
 	/**
