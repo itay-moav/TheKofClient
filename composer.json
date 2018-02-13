@@ -1,6 +1,17 @@
 {
-    "name": "TheKofClient",
-    "description": "TheKofClient",
-    "type": "git",
-    "keywords": ["TheKofClient"]
+	"name" : "TheKofClient",
+	"description" : "TheKofClient",
+	"type" : "git",
+	"keywords" : [
+		"TheKofClient SurveyMonkey"
+	],
+	"authors" : [{
+			"name" : "Itay Moav",
+			"homepage" : "cookinginbinary.blog",
+			"role" : "Superman"
+		}
+	],
+	"support" : {
+		"issues" : "itay.moav@email.sitel.org"
+	}
 }
