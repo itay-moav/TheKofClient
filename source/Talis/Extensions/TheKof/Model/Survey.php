@@ -37,7 +37,16 @@ class Model_Survey extends Model_a{
 	 * @return string
 	 */
 	public function title():string{
-	    return $this->item_data->title;
+	    return $this->get_raw_data()->title;
+	}
+	
+	/**
+	 * The preview link for this survey
+	 * 
+	 * @return string
+	 */
+	public function preview():string{
+	    return $this->details()->get_raw_data()->preview;
 	}
 	
 	/**
@@ -58,14 +67,14 @@ class Model_Survey extends Model_a{
 	 * @return array
 	 */
 	public function pages():array{
-	    return $this->details()->item_data->pages;
+	    return $this->details()->get_raw_data()->pages;
 	}
 	
 	/**
 	 * Returns all questions. this is a Generator
 	 */
 	public function all_questions(){
-	    $pages = $this->details()->item_data->pages;
+	    $pages = $this->details()->get_raw_data()->pages;
 	    foreach($pages as $page){
 	        foreach($page->questions as $question){
 	            yield $question;
