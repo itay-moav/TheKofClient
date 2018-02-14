@@ -12,13 +12,12 @@ class Model_Response extends Model_a{
 	}
 	
 	/**
-	 * Formats the responses into an array indexed by 
-	 * question id and has the question text in it
+	 * Adds the question information to the Response raw data in the right place.
 	 * 
 	 * @param Model_Survey $SurveyModel
 	 * @return array
 	 */
-	public function get_responses_combined_with_question(Model_Survey $SurveyModel){
+	public function combine_responses_with_question(Model_Survey $SurveyModel):Model_Response{
 	   $survey_questions = $SurveyModel->cached_questions();
 	   $pages = $this->get_raw_data()->pages;
 	   foreach($pages as $page){
@@ -26,6 +25,6 @@ class Model_Response extends Model_a{
 	           $question->question_full = $survey_questions[$question->id];
 	       }
 	   }
-	   return $this->get_raw_data();
+	   return $this;
 	}
 }
