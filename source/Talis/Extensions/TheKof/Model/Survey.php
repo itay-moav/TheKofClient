@@ -1,4 +1,11 @@
 <?php namespace Talis\Extensions\TheKof;
+/**
+ * This model object represents ONE SURVEY
+ * It might not be fully loaded, notice the [details] method
+ * 
+ * @author itay
+ *
+ */
 class Model_Survey extends Model_a{
 
     /**
@@ -96,5 +103,24 @@ class Model_Survey extends Model_a{
 	            yield $question;
 	        }
 	    }
+	}
+	
+	/**
+	 * Loads the questions and cache them in the object
+	 * indexed by their id, and return the array.
+	 * The caching will happen only once.
+	 * 
+	 * @return array
+	 */
+	public function cached_questions():array{
+	    static $cached_questions = [];
+	    if(!$cached_questions){
+	        foreach($this->all_questions() as $question){
+	            //SurveyMonkeyClient::$L->debug('RAW QUESTION',$question);
+	            $cached_questions[$question->id] = $question;
+	        }
+	    }
+	    
+	    return $cached_questions;
 	}
 }

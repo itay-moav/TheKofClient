@@ -472,6 +472,13 @@ class Model_Collector extends Model_a{
 	}
 }
 
+/**
+ * This model object represents ONE SURVEY
+ * It might not be fully loaded, notice the [details] method
+ * 
+ * @author itay
+ *
+ */
 class Model_Survey extends Model_a{
 
     /**
@@ -570,6 +577,25 @@ class Model_Survey extends Model_a{
 	        }
 	    }
 	}
+	
+	/**
+	 * Loads the questions and cache them in the object
+	 * indexed by their id, and return the array.
+	 * The caching will happen only once.
+	 * 
+	 * @return array
+	 */
+	public function cached_questions():array{
+	    static $cached_questions = [];
+	    if(!$cached_questions){
+	        foreach($this->all_questions() as $question){
+	            //SurveyMonkeyClient::$L->debug('RAW QUESTION',$question);
+	            $cached_questions[$question->id] = $question;
+	        }
+	    }
+	    
+	    return $cached_questions;
+	}
 }
 
 abstract class Model_a{
@@ -660,6 +686,12 @@ abstract class Model_a{
 	abstract protected function set_if_fully_loaded();
 }
 
+/**
+ * This model object represents one user ALL RESPONSES for ONE SURVEY
+ * 
+ * @author itay
+ *
+ */
 class Model_Response extends Model_a{
     
 	protected function set_if_fully_loaded(){
@@ -673,9 +705,15 @@ class Model_Response extends Model_a{
 	 * @param Model_Survey $SurveyModel
 	 * @return array
 	 */
-	public function get_response_with_question_text(Model_Survey $SurveyModel):array{
-	   SurveyMonkeyClient::$L->debug('RAW',$this->get_raw_data());
-	   return [];
+	public function get_responses_combined_with_question(Model_Survey $SurveyModel){
+	   $survey_questions = $SurveyModel->cached_questions();
+	   $pages = $this->get_raw_data()->pages;
+	   foreach($pages as $page){
+	       foreach($page->questions as $question){
+	           $question->question_full = $survey_questions[$question->id];
+	       }
+	   }
+	   return $this->get_raw_data();
 	}
 }
 
