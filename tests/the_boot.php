@@ -48,7 +48,4 @@ class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\ThirdPartyWrappers_
 	}
 }
 
-
-function tests_get_proper_client(){
-	return Talis\Extensions\TheKof\SurveyMonkeyClient::init(Env::$survey_monkey_config,new TestHTTPClientWrapper);
-}
+Talis\Extensions\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,new TestHTTPClientWrapper);

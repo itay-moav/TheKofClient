@@ -10,8 +10,8 @@ if(!is_numeric(Env::$survey_id_to_query)){
 	exit;
 }
 
-$Client = \Talis\Extensions\TheKof\SurveyMonkeyClient::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
-$all_surveys = $Client->surveys(Env::$survey_id_to_query)->get();
+\Talis\Extensions\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
+$all_surveys = \Talis\Extensions\TheKof\SurveyMonkey::surveys(Env::$survey_id_to_query)->get();
 foreach ($all_surveys as $survey){
 	/* @var $survey Model_Survey */
 	var_dump($survey);

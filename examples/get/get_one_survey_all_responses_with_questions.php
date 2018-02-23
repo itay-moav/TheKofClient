@@ -9,8 +9,8 @@ if(!is_numeric(Env::$survey_id_to_query)){
 	exit;
 }
 
-$Boss = \Talis\Extensions\TheKof\SurveyMonkeyClient::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
-$SurveyModel = $Boss->surveys(Env::$survey_id_to_query)->get_one();
+\Talis\Extensions\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
+$SurveyModel = \Talis\Extensions\TheKof\SurveyMonkey::surveys(Env::$survey_id_to_query)->get_one();
 $AllResponses = $SurveyModel->responses()->get();//u can use paging
 foreach($AllResponses as $k => $response){ //Each response object corespond to an entire survey response by one user, it will have 1 to many pages/questions and answers in it
     \Talis\Extensions\TheKof\SurveyMonkeyClient::$L->debug("============================================ RESPONSE [{$k}]===============================================",

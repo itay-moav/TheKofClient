@@ -6,53 +6,6 @@
  * @date 17-11-2017
  */
 abstract class Client_a{
-	const SURVEY_MONKEY_SERVICE_URL = 'https://api.surveymonkey.net/v3';
-	
-	/**
-	 * Configure values for this group of classes
-	 *      access_token string : get it from SurveyMonkey app settings page
-	 *
-	 * @var array
-	 */
-	static protected $config = [];
-	
-	/**
-	 * Http client Wrapper to handle actual http request.
-	 * Make sure to configure that object ahead of sending it to this class
-	 * with the actual http client
-	 *
-	 * @var ThirdPartyWrappers_HTTPClient_a
-	 */
-	static protected $HttpClientWrapper = null;
-	
-	/**
-	 * Inits the client system
-	 * The values entered here are gobal and immutable
-	 * 
-	 * @param array $config
-	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
-	 * @throws \InvalidArgumentException
-	 */
-	static public function megatherion_init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper){
-		self::megatherion_validate_config_attributes($config);
-		self::$config = $config;
-		self::$HttpClientWrapper = $HttpClientWrapper;
-	}
-	
-	/**
-	 * Validates the $config array that has the necessary values
-	 *
-	 * @param array $config ['access_token']
-	 *
-	 * @throws \InvalidArgumentException
-	 */
-	static private function megatherion_validate_config_attributes(array $config):void{
-		if(!isset($config['access_token'])){
-			throw new \InvalidArgumentException('Missing access_token in $config');
-		}
-	}
-	
-
 	/**
 	 * If we have a query, we start each section with this char
 	 * Every method that uses it, need to change it to '&' to prevent two ? in
@@ -82,8 +35,6 @@ abstract class Client_a{
 	protected $asset_id_received   = false;
 	
 	/**
-	 * @param array $config
-	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
 	 * @param Util_DryRequest $current_dry_request bubbled from the previous client
 	 * 
 	 * @throws \InvalidArgumentException
@@ -132,7 +83,7 @@ abstract class Client_a{
 	 */
 	public function get(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_Collection{
 	    $this->get_dry($page,$per_page,$query_part);
-		return $this->build_asset(self::$HttpClientWrapper->execute_dry_request($this->current_dry_request));
+	    return $this->build_asset(SurveyMonkey::$HttpClientWrapper->execute_dry_request($this->current_dry_request));
 	}
 	
 	/**
@@ -168,7 +119,7 @@ abstract class Client_a{
 	 */
 	public function post(Model_a $model):Model_a{
 		$this->post_dry($model);
-		$raw_response = self::$HttpClientWrapper->execute_dry_request($this->current_dry_request);
+		$raw_response = SurveyMonkey::$HttpClientWrapper->execute_dry_request($this->current_dry_request);
 		return $model->change_state($raw_response->body);
 	}
 	
@@ -205,7 +156,7 @@ abstract class Client_a{
 	 */
 	public function patch(Model_a $model,\stdClass $sub_structure):Model_a{
 	    $this->patch_dry($sub_structure);
-	    $raw_response = self::$HttpClientWrapper->execute_dry_request($this->current_dry_request);
+	    $raw_response = SurveyMonkey::$HttpClientWrapper->execute_dry_request($this->current_dry_request);
 	    return $model->change_state($raw_response->body);
 	}
 	

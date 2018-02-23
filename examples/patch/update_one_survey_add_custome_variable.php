@@ -29,6 +29,6 @@ $raw_data = new \stdClass;
 $raw_data->custom_variables = new stdClass;
 $raw_data->custom_variables->$var_name = $var_value;
 
-$Client = \Talis\Extensions\TheKof\SurveyMonkeyClient::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
-$update_survey = $Client->surveys(Env::$survey_id_to_query)->get_one()->patch($raw_data);
+\Talis\Extensions\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
+$update_survey = \Talis\Extensions\TheKof\SurveyMonkey::surveys(Env::$survey_id_to_query)->get_one()->patch($raw_data);
 var_dump($update_survey->get_raw_data());
