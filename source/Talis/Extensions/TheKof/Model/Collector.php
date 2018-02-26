@@ -31,4 +31,21 @@ class Model_Collector extends Model_a{
 		$this->fully_load();
 		return $this->item_data->url;
 	}
+	
+	/**
+	 * collector name
+	 * @return string
+	 */
+	public function name():string{
+	    return $this->item_data->name;
+	}
+	
+	/**
+	 * alias for name()
+	 * @return string
+	 */
+	public function title():string{
+	    return $this->name();
+	}
+	
 }
