@@ -405,7 +405,7 @@ class Model_Collector extends Model_a{
 	 * @return Client_Collectors
 	 */
 	protected function get_client():Client_Collectors{
-		return (new SurveyMonkeyClient)->collector($this->item_data->id);
+		return SurveyMonkey::collectors($this->item_data->id);
 	}
 	
 	protected function set_if_fully_loaded(){
@@ -456,7 +456,7 @@ class Model_Survey extends Model_a{
      * @return Client_Surveys
      */
 	protected function get_client():Client_Surveys{
-		return (new SurveyMonkeyClient)->surveys($this->item_data->id);
+		return SurveyMonkey::surveys($this->item_data->id);
 	}
 	
 	protected function set_if_fully_loaded(){
@@ -557,7 +557,7 @@ class Model_Survey extends Model_a{
 	    static $cached_questions = [];
 	    if(!$cached_questions){
 	        foreach($this->all_questions() as $question){
-	            //SurveyMonkeyClient::$L->debug('RAW QUESTION',$question);
+	            //SurveyMonkey::$L->debug('RAW QUESTION',$question);
 	            $cached_questions[$question->id] = $question;
 	        }
 	    }
@@ -683,21 +683,6 @@ class Model_Response extends Model_a{
 	   return $this;
 	}
 }
-
-
-//TODO DELETE THIS!
-
-/**
- * Class is the "boss" of this entire system.
- * It provides the API to build and execute the queries to Survey monkey
- * 
- * @author Itay Moav
- * @Date 13-11-2017
- *
- */
-class SurveyMonkeyClient extends SurveyMonkey{
-}
-
 
 /**
  * Data structure for holding a request details.
@@ -998,7 +983,7 @@ class ThirdPartyWrappers_HTTPClient_ZendFW2 extends ThirdPartyWrappers_HTTPClien
 	 * @return \Talisxtensions\TheKof\Util_RawResponse
 	 */
 	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
-	    SurveyMonkeyClient::$L->debug("
+	    SurveyMonkey::$L->debug("
 ==================================================
 DOing " . $DryRequest->method() . ': ' . $DryRequest->url());
 	    
@@ -1178,14 +1163,15 @@ class SurveyMonkey{
 	 * 
 	 * @param array $config
 	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
-	 * @return SurveyMonkey
+	 * @return bool true for success
 	 */
-    static public function init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper,ThirdPartyWrappers_Logger_a $Logger = null){
+    static public function init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper,ThirdPartyWrappers_Logger_a $Logger = null):bool{
         if(!$Logger){
             $Logger = new ThirdPartyWrappers_Logger_EchoNative;
         }
         self::$L = $Logger;
 		self::megatherion_init($config, $HttpClientWrapper);//init the client
+		return true;
 	}
 	
 	/**
@@ -1238,7 +1224,7 @@ class SurveyMonkey{
 	 * @param int $collector_id
 	 * @return Client_Collectors
 	 */
-	static public function collector(int $collector_id):Client_Collectors{
+	static public function collectors(int $collector_id):Client_Collectors{
 		$dry_request = new Util_DryRequest(self::$config['access_token']);
 		$dry_request->url(self::SURVEY_MONKEY_SERVICE_URL);// ($survey_id?"/{$survey_id}":''));
 		$CollectorClient = new Client_Collectors($dry_request);

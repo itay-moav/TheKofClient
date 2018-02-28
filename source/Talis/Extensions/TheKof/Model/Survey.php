@@ -15,7 +15,7 @@ class Model_Survey extends Model_a{
      * @return Client_Surveys
      */
 	protected function get_client():Client_Surveys{
-		return (new SurveyMonkeyClient)->surveys($this->item_data->id);
+		return SurveyMonkey::surveys($this->item_data->id);
 	}
 	
 	protected function set_if_fully_loaded(){
@@ -116,7 +116,7 @@ class Model_Survey extends Model_a{
 	    static $cached_questions = [];
 	    if(!$cached_questions){
 	        foreach($this->all_questions() as $question){
-	            //SurveyMonkeyClient::$L->debug('RAW QUESTION',$question);
+	            //SurveyMonkey::$L->debug('RAW QUESTION',$question);
 	            $cached_questions[$question->id] = $question;
 	        }
 	    }

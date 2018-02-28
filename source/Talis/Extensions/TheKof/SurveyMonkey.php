@@ -39,14 +39,15 @@ class SurveyMonkey{
 	 * 
 	 * @param array $config
 	 * @param ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper
-	 * @return SurveyMonkey
+	 * @return bool true for success
 	 */
-    static public function init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper,ThirdPartyWrappers_Logger_a $Logger = null){
+    static public function init(array $config,ThirdPartyWrappers_HTTPClient_a $HttpClientWrapper,ThirdPartyWrappers_Logger_a $Logger = null):bool{
         if(!$Logger){
             $Logger = new ThirdPartyWrappers_Logger_EchoNative;
         }
         self::$L = $Logger;
 		self::megatherion_init($config, $HttpClientWrapper);//init the client
+		return true;
 	}
 	
 	/**
@@ -99,7 +100,7 @@ class SurveyMonkey{
 	 * @param int $collector_id
 	 * @return Client_Collectors
 	 */
-	static public function collector(int $collector_id):Client_Collectors{
+	static public function collectors(int $collector_id):Client_Collectors{
 		$dry_request = new Util_DryRequest(self::$config['access_token']);
 		$dry_request->url(self::SURVEY_MONKEY_SERVICE_URL);// ($survey_id?"/{$survey_id}":''));
 		$CollectorClient = new Client_Collectors($dry_request);

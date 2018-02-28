@@ -15,7 +15,7 @@ class Model_Collector extends Model_a{
 	 * @return Client_Collectors
 	 */
 	protected function get_client():Client_Collectors{
-		return (new SurveyMonkeyClient)->collector($this->item_data->id);
+		return SurveyMonkey::collectors($this->item_data->id);
 	}
 	
 	protected function set_if_fully_loaded(){
