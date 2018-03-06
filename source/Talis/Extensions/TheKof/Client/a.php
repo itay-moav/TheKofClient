@@ -7,14 +7,6 @@
  */
 abstract class Client_a{
 	/**
-	 * If we have a query, we start each section with this char
-	 * Every method that uses it, need to change it to '&' to prevent two ? in
-	 * url
-	 * @var string
-	 */
-	protected $query_separator_char = '?';
-	
-	/**
 	 * Client builds requests, according to called methods and params.
 	 * That request is then sent to method or method_dry to be executed.
 	 * This variable is where I store the current request the client is
@@ -57,18 +49,9 @@ abstract class Client_a{
 	 */
 	public function get_dry(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_DryRequest{
 		$this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
-		if($page > 0){
-			$this->current_dry_request->url_add("{$this->query_separator_char}page={$page}");
-			$this->query_separator_char = '&';
-			if($per_page > 0){
-				$this->current_dry_request->url_add("{$this->query_separator_char}per_page={$per_page}");
-			}
-			
-		}
-		
-		if($query_part){
-		    $this->current_dry_request->url_add("{$this->query_separator_char}{$query_part}");
-		}
+		$this->current_dry_request->set_url_param('page',$page);
+		$this->current_dry_request->set_url_param('per_page',$per_page);
+		$query_part?$this->current_dry_request->add_url_query_parts($query_part):'I do nothing, Will listen to Therion, good band.';
 		return $this->current_dry_request;
 	}
 	
@@ -189,15 +172,26 @@ abstract class Client_a{
 	 * 
 	 * title=xxxx This also works with partial names, will return all matching
 	 * 
-	 * @param string $query_string
+	 * @param Client_QueryParts_i $query_part
 	 * @return Client_a
 	 */
-	public function query(string $query_string):Client_a{
-		$this->current_dry_request->url_add("{$this->query_separator_char}{$query_string}");
-		$this->query_separator_char = '&';
+	public function query(Client_QueryParts_i $query_part):Client_a{
+	    $this->current_dry_request->add_url_query_parts($query_part);
 		return $this;
 	}
 	
+	/**
+	 * adds query string, free form
+	 *
+	 *
+	 * @param string $query_string
+	 * @return Client_a
+	 */
+	public function query_freeform(string $query_string):Client_a{
+	    $this->current_dry_request->add_url_query_parts($query_string);
+	    return $this;
+	}
+	    
 	/**
 	 * THIS IS ALWAYS TO LOAD THE CURRENT ITEM, ONLY ONE!
 	 * 

@@ -97,14 +97,6 @@ class Client_Surveys extends Client_a{
  */
 abstract class Client_a{
 	/**
-	 * If we have a query, we start each section with this char
-	 * Every method that uses it, need to change it to '&' to prevent two ? in
-	 * url
-	 * @var string
-	 */
-	protected $query_separator_char = '?';
-	
-	/**
 	 * Client builds requests, according to called methods and params.
 	 * That request is then sent to method or method_dry to be executed.
 	 * This variable is where I store the current request the client is
@@ -147,18 +139,9 @@ abstract class Client_a{
 	 */
 	public function get_dry(int $page=0,int $per_page=0,?Client_QueryParts_i $query_part=null):Util_DryRequest{
 		$this->current_dry_request->method(ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
-		if($page > 0){
-			$this->current_dry_request->url_add("{$this->query_separator_char}page={$page}");
-			$this->query_separator_char = '&';
-			if($per_page > 0){
-				$this->current_dry_request->url_add("{$this->query_separator_char}per_page={$per_page}");
-			}
-			
-		}
-		
-		if($query_part){
-		    $this->current_dry_request->url_add("{$this->query_separator_char}{$query_part}");
-		}
+		$this->current_dry_request->set_url_param('page',$page);
+		$this->current_dry_request->set_url_param('per_page',$per_page);
+		$query_part?$this->current_dry_request->add_url_query_parts($query_part):'I do nothing, Will listen to Therion, good band.';
 		return $this->current_dry_request;
 	}
 	
@@ -279,15 +262,26 @@ abstract class Client_a{
 	 * 
 	 * title=xxxx This also works with partial names, will return all matching
 	 * 
-	 * @param string $query_string
+	 * @param Client_QueryParts_i $query_part
 	 * @return Client_a
 	 */
-	public function query(string $query_string):Client_a{
-		$this->current_dry_request->url_add("{$this->query_separator_char}{$query_string}");
-		$this->query_separator_char = '&';
+	public function query(Client_QueryParts_i $query_part):Client_a{
+	    $this->current_dry_request->add_url_query_parts($query_part);
 		return $this;
 	}
 	
+	/**
+	 * adds query string, free form
+	 *
+	 *
+	 * @param string $query_string
+	 * @return Client_a
+	 */
+	public function query_freeform(string $query_string):Client_a{
+	    $this->current_dry_request->add_url_query_parts($query_string);
+	    return $this;
+	}
+	    
 	/**
 	 * THIS IS ALWAYS TO LOAD THE CURRENT ITEM, ONLY ONE!
 	 * 
@@ -684,6 +678,9 @@ class Model_Response extends Model_a{
 	}
 }
 
+use Zend\Form\Annotation\Name;
+use Zend\Memory\Value;
+
 /**
  * Data structure for holding a request details.
  * Usefull for mocking up tests, overriding the default use
@@ -696,7 +693,7 @@ class Model_Response extends Model_a{
  */
 class Util_DryRequest{
 	
-	private $url,$method,$body,$headers;
+	private $url='',$url_params=[],$url_query_parts=[],$method='',$body=null,$headers=[];
 	
 	public function __construct($access_token){
 		$this->headers([
@@ -705,6 +702,9 @@ class Util_DryRequest{
 		]);
 	}
 	
+	/**
+	 * @return string json encoded of this entire object. for debug purposes.
+	 */
 	public function __toString(){
 		$res = new \stdClass;
 		$res->url     = $this->url;
@@ -715,13 +715,38 @@ class Util_DryRequest{
 	}
 	
 	/**
-	 * Sets the url to input value
+	 * Sets the url to input value, resets the url params and query parts
 	 * 
 	 * @param string $url
 	 * @return string url
 	 */
 	public function url(string $url=''):string{
-		return $this->url = $url?:$this->url;
+	    if($url){
+	        $this->url = $url;
+	        $this->url_params=[];
+	        $this->url_query_parts = [];
+	    }
+	    $sep = '?';
+	    $url_params = '';
+	    if($this->url_params){
+	        foreach($this->url_params as $k => $v){
+	            if($v){
+    	            $url_params .= "{$sep}{$k}={$v}";
+    	            $sep='&';
+	            }
+	        }
+	    }
+	    
+	    if($this->url_query_parts){
+	        foreach($this->url_query_parts as $v){
+	            if($v){
+	                $url_params .= "{$sep}{$v}";
+	                $sep='&';
+	            }
+	        }
+	    }
+	    
+	    return $this->url . $url_params;
 	}
 	
 	/**
@@ -731,20 +756,45 @@ class Util_DryRequest{
 	 * @return string the modified url
 	 */
 	public function url_add(string $concate_url):string{
-		return $this->url .= $concate_url;
+		return $this->url    .= $concate_url;
 	}
 	
 	
 	public function method(string $method=''):string{
-		return $this->method= $method?:$this->method;
+		return $this->method  = $method?:$this->method;
 	}
 	
 	public function body($body=null){
-		return $this->body = $body?:$this->body;
+		return $this->body    = $body?:$this->body;
 	}
 	
 	public function headers(array $headers=[]):array{
 		return $this->headers = $headers?:$this->headers;
+	}
+	
+	/**
+	 * Url params
+	 * 
+	 * @param string $k param Name
+	 * @param mixed $v param Value
+	 * @return Util_DryRequest
+	 */
+	public function set_url_param(string $k,$v):Util_DryRequest{
+	    if($v){
+    	    $this->url_params[$k] = $v;
+	    }
+	    return $this;
+	}
+	
+	/**
+	 * A query is a k=v string which has to be recognized by SM.
+	 * 
+	 * @param Client_QueryParts_i|string $query
+	 * @return Util_DryRequest
+	 */
+	public function add_url_query_parts($query):Util_DryRequest{
+	   $this->url_query_parts[] = $query;
+	   return $this;
 	}
 }
 

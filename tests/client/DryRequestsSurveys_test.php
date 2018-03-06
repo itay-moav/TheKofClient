@@ -39,29 +39,30 @@ class DryRequestsSurveys_test extends TestCase {
 		$this->assertEquals($headers, $ActualDryRequest->headers(),'headers do not match');
 		
 		//2. page one, default size
-		$expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}?page=1";
+		$expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}";
 		$ExpectedDryRequest = new \Talis\Extensions\TheKof\Util_DryRequest(Env::$survey_monkey_config['access_token']);
 		$ExpectedDryRequest->url($expected_url);
+		$ExpectedDryRequest->set_url_param('page',1);
 		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
 		
 		$ActualDryRequest = Talis\Extensions\TheKof\SurveyMonkey::surveys($fake_survey_id)->get_dry(1);
 		$this->assertEquals($ExpectedDryRequest,$ActualDryRequest,'(page 1) response structure is not same');
 
-		$this->assertEquals($expected_url, $ActualDryRequest->url(),'url does not match');
+		$this->assertEquals($expected_url . '?page=1', $ActualDryRequest->url(),'url does not match');
 		$this->assertEquals('GET', $ActualDryRequest->method(),'METHOD does not match');
 		$this->assertEquals($headers, $ActualDryRequest->headers(),'headers do not match');
 		
 		
 		//3. page 2 size 10
-		$expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}?page=2&per_page=10";
+		$expected_url = "https://api.surveymonkey.net/v3/surveys/{$fake_survey_id}";
 		$ExpectedDryRequest = new \Talis\Extensions\TheKof\Util_DryRequest(Env::$survey_monkey_config['access_token']);
 		$ExpectedDryRequest->url($expected_url);
 		$ExpectedDryRequest->method(\Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a::METHOD_GET);
-		
+		$ExpectedDryRequest->set_url_param('page',2)->set_url_param('per_page',10);
 		$ActualDryRequest = Talis\Extensions\TheKof\SurveyMonkey::surveys($fake_survey_id)->get_dry(2,10);
 		$this->assertEquals($ExpectedDryRequest,$ActualDryRequest,'(page 2,10) response structure is not same');
 		
-		$this->assertEquals($expected_url, $ActualDryRequest->url(),'url does not match');
+		$this->assertEquals($expected_url . '?page=2&per_page=10', $ActualDryRequest->url(),'url does not match');
 		$this->assertEquals('GET', $ActualDryRequest->method(),'METHOD does not match');
 		$this->assertEquals($headers, $ActualDryRequest->headers(),'headers do not match');
 	}
