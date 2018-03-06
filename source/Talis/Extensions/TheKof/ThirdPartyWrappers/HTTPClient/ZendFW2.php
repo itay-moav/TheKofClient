@@ -19,7 +19,7 @@ class ThirdPartyWrappers_HTTPClient_ZendFW2 extends ThirdPartyWrappers_HTTPClien
 	 * @param \Talis\Extensions\TheKof\Util_DryRequest $DryRequest
 	 * @return \Talis\Extensions\TheKof\Util_RawResponse
 	 */
-	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
+	protected function execute_dry_request_internal(Util_DryRequest $DryRequest):Util_RawResponse{
 	    SurveyMonkey::$L->debug("\n==================================================\nDOing " . $DryRequest->method() . ': ' . $DryRequest->url());
 	    
 		$this->concrete_http_client->setMethod($DryRequest->method());

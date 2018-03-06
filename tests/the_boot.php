@@ -37,7 +37,7 @@ class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\ThirdPartyWrappers_
 	 * @param \Talis\Extensions\TheKof\Util_DryRequest $DryRequest
 	 * @return \Talis\Extensions\TheKof\Util_RawResponse
 	 */
-	public function execute_dry_request(\Talis\Extensions\TheKof\Util_DryRequest $DryRequest):\Talis\Extensions\TheKof\Util_RawResponse{
+	protected function execute_dry_request_internal(\Talis\Extensions\TheKof\Util_DryRequest $DryRequest):\Talis\Extensions\TheKof\Util_RawResponse{
 		echo "\n==================================================\nDOing " . $DryRequest->url() . "\n\n\n\n";
 		$Response = new \Talis\Extensions\TheKof\Util_RawResponse;
 		$Response->http_code 			= 200;

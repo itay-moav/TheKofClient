@@ -1001,13 +1001,24 @@ abstract class ThirdPartyWrappers_HTTPClient_a{
 	}
 	
 	/**
+	 * Calls the actual execution functions. Captures errors, do pre  and post actions.
+	 * 
+	 * @param Util_DryRequest $DryRequest
+	 * @return Util_RawResponse
+	 */
+	final public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
+	    SurveyMonkey::$requests_counter++;
+	    return $this->execute_dry_request_internal($DryRequest);
+	}
+	
+	/**
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 * 
 	 * @param \Talisxtensions\TheKof\Util_DryRequest $DryRequest
 	 * TODO what do I return here? a dry response?
 	 */
-	abstract public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse;
+	abstract protected function execute_dry_request_internal(Util_DryRequest $DryRequest):Util_RawResponse;
 }
 
 
@@ -1032,7 +1043,7 @@ class ThirdPartyWrappers_HTTPClient_ZendFW2 extends ThirdPartyWrappers_HTTPClien
 	 * @param \Talisxtensions\TheKof\Util_DryRequest $DryRequest
 	 * @return \Talisxtensions\TheKof\Util_RawResponse
 	 */
-	public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
+	protected function execute_dry_request_internal(Util_DryRequest $DryRequest):Util_RawResponse{
 	    SurveyMonkey::$L->debug("
 ==================================================
 DOing " . $DryRequest->method() . ': ' . $DryRequest->url());
@@ -1207,6 +1218,14 @@ class SurveyMonkey{
      * @var ThirdPartyWrappers_Logger_a
      */
     static public $L = null;
+    
+    /**
+     * Counts the number of SM requests per process.
+     * If u want to carry this value between processes, find a shared storage solution (memory would be best).
+     * 
+     * @var integer
+     */
+    static public $requests_counter = 0;
 	
 	/**
 	 * Init system and return a ready survey monkey client

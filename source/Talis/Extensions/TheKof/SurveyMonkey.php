@@ -33,6 +33,14 @@ class SurveyMonkey{
      * @var ThirdPartyWrappers_Logger_a
      */
     static public $L = null;
+    
+    /**
+     * Counts the number of SM requests per process.
+     * If u want to carry this value between processes, find a shared storage solution (memory would be best).
+     * 
+     * @var integer
+     */
+    static public $requests_counter = 0;
 	
 	/**
 	 * Init system and return a ready survey monkey client
