@@ -1,4 +1,6 @@
-# Stable release v0.5 is out 
+# current: V0.8
+
+# Stable release v0.7 is out 
 
 # TheKofClient
 A PHP client for [Survey Monkey API V3 https://developer.surveymonkey.com/api/v3/](https://developer.surveymonkey.com/api/v3/)
