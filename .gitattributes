@@ -1,0 +1,5 @@
+/tests export-ignore
+/.* export-ignore
+/examples export-ignore
+/bundle/bundle.sh export-ignore
+/source export-ignore
