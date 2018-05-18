@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * base abstract for each asset client and for the main client
  * 

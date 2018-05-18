@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 
 
 /**
@@ -81,7 +81,7 @@ class Client_Surveys extends Client_a{
 	 * Sends the data of a single item to the right model class
 	 * 
 	 * {@inheritDoc}
-	 * @see \Talisxtensions\TheKof\Client_a::translate_to_model()
+	 * @see \TheKof\Client_a::translate_to_model()
 	 */
 	protected function translate_to_model(\stdClass $single_item):Model_a{
 		return new Model_Survey($single_item);
@@ -678,9 +678,6 @@ class Model_Response extends Model_a{
 	}
 }
 
-use Zend\Form\Annotation\Name;
-use Zend\Memory\Value;
-
 /**
  * Data structure for holding a request details.
  * Usefull for mocking up tests, overriding the default use
@@ -1008,7 +1005,7 @@ abstract class ThirdPartyWrappers_HTTPClient_a{
 	 */
 	final public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
 	    SurveyMonkey::$requests_counter++;
-	    dbgn('REQUEST [' . SurveyMonkey::$requests_counter . ']');
+// 	    dbgn('REQUEST [' . SurveyMonkey::$requests_counter . ']');
 	    return $this->execute_dry_request_internal($DryRequest);
 	}
 	
@@ -1016,7 +1013,7 @@ abstract class ThirdPartyWrappers_HTTPClient_a{
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 * 
-	 * @param \Talisxtensions\TheKof\Util_DryRequest $DryRequest
+	 * @param \TheKof\Util_DryRequest $DryRequest
 	 * TODO what do I return here? a dry response?
 	 */
 	abstract protected function execute_dry_request_internal(Util_DryRequest $DryRequest):Util_RawResponse;
@@ -1041,8 +1038,8 @@ class ThirdPartyWrappers_HTTPClient_ZendFW2 extends ThirdPartyWrappers_HTTPClien
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 *
-	 * @param \Talisxtensions\TheKof\Util_DryRequest $DryRequest
-	 * @return \Talisxtensions\TheKof\Util_RawResponse
+	 * @param \TheKof\Util_DryRequest $DryRequest
+	 * @return \TheKof\Util_RawResponse
 	 */
 	protected function execute_dry_request_internal(Util_DryRequest $DryRequest):Util_RawResponse{
 	    SurveyMonkey::$L->debug("

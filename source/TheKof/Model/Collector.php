@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 class Model_Collector extends Model_a{
 	const REDIRECT_TYPE__URL	= 'url',
 		  REDIRECT_TYPE__CLOSE  = 'close',

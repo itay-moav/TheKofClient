@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * The default logger - just echoes to stdio
  * 

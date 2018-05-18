@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * This model object represents one user ALL RESPONSES for ONE SURVEY
  * 

@@ -23,7 +23,7 @@ $raw_data->name				= $collector_name;
 $raw_data->redirect_url 	= 'http://www.somewebsite.com';
 $raw_data->redirect_type 	= 'url';
 
-\Talis\Extensions\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
-$collector = \Talis\Extensions\TheKof\SurveyMonkey::surveys(Env::$survey_id_to_query)->collectors()->post(new \Talis\Extensions\TheKof\Model_Collector($raw_data));
+\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
+$collector = \TheKof\SurveyMonkey::surveys(Env::$survey_id_to_query)->collectors()->post(new \TheKof\Model_Collector($raw_data));
 
 var_dump($collector);

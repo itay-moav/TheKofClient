@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * This model object represents ONE SURVEY
  * It might not be fully loaded, notice the [details] method

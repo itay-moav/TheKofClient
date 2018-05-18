@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * @author Itay Moav
  * @Date Nov 17 - 2017
@@ -16,8 +16,8 @@ class ThirdPartyWrappers_HTTPClient_ZendFW2 extends ThirdPartyWrappers_HTTPClien
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 *
-	 * @param \Talis\Extensions\TheKof\Util_DryRequest $DryRequest
-	 * @return \Talis\Extensions\TheKof\Util_RawResponse
+	 * @param \TheKof\Util_DryRequest $DryRequest
+	 * @return \TheKof\Util_RawResponse
 	 */
 	protected function execute_dry_request_internal(Util_DryRequest $DryRequest):Util_RawResponse{
 	    SurveyMonkey::$L->debug("\n==================================================\nDOing " . $DryRequest->method() . ': ' . $DryRequest->url());

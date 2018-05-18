@@ -1,7 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
-use Zend\Form\Annotation\Name;
-use Zend\Memory\Value;
-
+<?php namespace TheKof;
 /**
  * Data structure for holding a request details.
  * Usefull for mocking up tests, overriding the default use

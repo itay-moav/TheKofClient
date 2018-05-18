@@ -24,7 +24,7 @@ require_once '../bundle/thekofclient.php';
  * @author Itay Moav
  * @Date Dec 8 - 2017
  */
-class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\ThirdPartyWrappers_HTTPClient_a{
+class TestHTTPClientWrapper extends \TheKof\ThirdPartyWrappers_HTTPClient_a{
 	
 	public function __construct(){
 		$this->concrete_http_client = null;
@@ -34,12 +34,12 @@ class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\ThirdPartyWrappers_
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 *
-	 * @param \Talis\Extensions\TheKof\Util_DryRequest $DryRequest
-	 * @return \Talis\Extensions\TheKof\Util_RawResponse
+	 * @param \TheKof\Util_DryRequest $DryRequest
+	 * @return \TheKof\Util_RawResponse
 	 */
-	protected function execute_dry_request_internal(\Talis\Extensions\TheKof\Util_DryRequest $DryRequest):\Talis\Extensions\TheKof\Util_RawResponse{
+	protected function execute_dry_request_internal(\TheKof\Util_DryRequest $DryRequest):\TheKof\Util_RawResponse{
 		echo "\n==================================================\nDOing " . $DryRequest->url() . "\n\n\n\n";
-		$Response = new \Talis\Extensions\TheKof\Util_RawResponse;
+		$Response = new \TheKof\Util_RawResponse;
 		$Response->http_code 			= 200;
 		$Response->http_code_message	= 'baba was here - all is good';
 		$Response->headers				= [];
@@ -48,4 +48,4 @@ class TestHTTPClientWrapper extends \Talis\Extensions\TheKof\ThirdPartyWrappers_
 	}
 }
 
-Talis\Extensions\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,new TestHTTPClientWrapper);
+TheKof\SurveyMonkey::init(Env::$survey_monkey_config,new TestHTTPClientWrapper);

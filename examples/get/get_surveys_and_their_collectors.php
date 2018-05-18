@@ -4,8 +4,8 @@
  * currently is page = 1 and per_page = 50
  */
 require_once '../env.php';
-\Talis\Extensions\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
-$all_surveys = \Talis\Extensions\TheKof\SurveyMonkey::surveys()->get();
+\TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
+$all_surveys = \TheKof\SurveyMonkey::surveys()->get();
 $i=0;
 foreach ($all_surveys as $survey){
 	

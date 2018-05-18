@@ -18,11 +18,11 @@ class Configure_test extends TestCase {
 	 */
 	public function testConfiguremissingAccessToekn(){
 		$this->expectException(InvalidArgumentException::class);
-		Talis\Extensions\TheKof\SurveyMonkey::init([],new TestHTTPClientWrapper);
+		TheKof\SurveyMonkey::init([],new TestHTTPClientWrapper);
 	}
 	
 	public function testConfigureWithAccessToekn(){
-		$Client=\Talis\Extensions\TheKof\SurveyMonkey::surveys();
-		$this->assertInstanceOf(\Talis\Extensions\TheKof\Client_Surveys::class, $Client,'Client did not initiate with test configuration');
+		$Client=\TheKof\SurveyMonkey::surveys();
+		$this->assertInstanceOf(\TheKof\Client_Surveys::class, $Client,'Client did not initiate with test configuration');
 	}
 }

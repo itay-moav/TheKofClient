@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * Class is the "boss" of this entire system.
  * It provides the API to build and execute the queries to Survey monkey

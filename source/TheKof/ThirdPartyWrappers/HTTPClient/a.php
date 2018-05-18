@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * @author Itay Moav
  * @Date Nov 17 - 2017
@@ -46,7 +46,7 @@ abstract class ThirdPartyWrappers_HTTPClient_a{
 	 */
 	final public function execute_dry_request(Util_DryRequest $DryRequest):Util_RawResponse{
 	    SurveyMonkey::$requests_counter++;
-	    dbgn('REQUEST [' . SurveyMonkey::$requests_counter . ']');
+// 	    dbgn('REQUEST [' . SurveyMonkey::$requests_counter . ']');
 	    return $this->execute_dry_request_internal($DryRequest);
 	}
 	
@@ -54,7 +54,7 @@ abstract class ThirdPartyWrappers_HTTPClient_a{
 	 * This is where the actual translation from DryRequest info to the actual client
 	 * is happening.
 	 * 
-	 * @param \Talis\Extensions\TheKof\Util_DryRequest $DryRequest
+	 * @param \TheKof\Util_DryRequest $DryRequest
 	 * TODO what do I return here? a dry response?
 	 */
 	abstract protected function execute_dry_request_internal(Util_DryRequest $DryRequest):Util_RawResponse;

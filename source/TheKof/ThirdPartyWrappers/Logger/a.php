@@ -1,4 +1,4 @@
-<?php namespace Talis\Extensions\TheKof;
+<?php namespace TheKof;
 /**
  * There are different loggers out there, you might have your own.
  * You can use your own logger with TheKof, just create
