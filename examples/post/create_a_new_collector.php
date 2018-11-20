@@ -22,6 +22,7 @@ $raw_data->type				= 'weblink';
 $raw_data->name				= $collector_name;
 $raw_data->redirect_url 	= 'http://www.somewebsite.com';
 $raw_data->redirect_type 	= 'url';
+$raw_data->allow_multiple_responses = True;
 
 \TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
 $collector = \TheKof\SurveyMonkey::surveys(Env::$survey_id_to_query)->collectors()->post(new \TheKof\Model_Collector($raw_data));

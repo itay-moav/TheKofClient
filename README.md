@@ -39,11 +39,7 @@ But, it is a stand alone project.
 
 ### Installation  
 **Using TalisMS**  
-copy `source/Talis/Extensions/TheKof` folder of this project, and put it under
-`Talis/Extensions/` If TalisMS is properly installed in your project. It is done.
-```
-mv path/to/source/Talis/Extensions/TheKof path/to/your/Talis/Extensions/.
-```
+copy `TheKof/src` folder of this project, and put it under
 
 **Use as standalone lib with autoloader**  
 Put `source/Talis` in your include path for PHP.  

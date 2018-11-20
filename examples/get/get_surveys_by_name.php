@@ -12,7 +12,7 @@ if(!is_string(Env::$survey_name_to_query)){
 }
 
 \TheKof\SurveyMonkey::init(Env::$survey_monkey_config,$http_client_wrapper);//this two params are coming from the env.php file
-$query='title=test';// . Env::$survey_name_to_query;
+$query='title=Revised';// . Env::$survey_name_to_query;
 $surveys = \TheKof\SurveyMonkey::surveys()->query_freeform($query)->get(1,2);
 foreach ($surveys as $survey){
 	echo "\n\n================================================\n";
