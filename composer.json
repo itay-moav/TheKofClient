@@ -3,7 +3,7 @@
 	"description" : "TheKofClient is a PHP client for SurveyMonkey API. Written to be intuitvly used.",
 	"type" : "git",
 	"keywords" : [
-	     "TheKofClient SurveyMonkey php"
+	     "TheKofClient","SurveyMonkey","api","php"
 	],
 	"require": {
 	    "php": ">=7.2.0"
