@@ -22,24 +22,30 @@ class Util_Collection implements \Iterator,\Countable{
 	 * 
 	 * @var array
 	 */
-	private $data_collection = [];
+	private array $data_collection = [];
+
+	/**
+ 	 * @var integer
+   	 */
+	private int $page = 1;
 	
-	private $page = 1;
-	
-	private $page_size = 50;
+	/**
+ 	 * @var integer
+   	 */
+	private int $page_size = 50;
 	
 	/**
 	 * Total entries/items 
 	 * 
 	 * @var integer
 	 */
-	private $total_entries_in_query = 1;
+	private int $total_entries_in_query = 1;
 	
 	/**
 	 * Url for the next page for this set
 	 * @var string
 	 */
-	private $link_next = '';
+	private string $link_next = '';
 	
 	/**
 	 * Url for the previous page, before this page
@@ -47,6 +53,9 @@ class Util_Collection implements \Iterator,\Countable{
 	 */
 	private $link_previous = '';
 	
+	/**
+ 	 * 
+   	 */
 	public function __construct(Util_RawResponse $RawResponse,callable $translation_func){
 		$this->translation_func = $translation_func;
 		$this->parse_raw_response($RawResponse);
@@ -86,24 +95,24 @@ class Util_Collection implements \Iterator,\Countable{
 		return $this->total_entries_in_query; //CHECK THIS IS NOT THE GENERAL NUMBER FOR ALL PAGES
 	}
 	
-	public function current(){
+	public function current():mixed{
 		$func = $this->translation_func;
 		return $func(current($this->data_collection));
 	}
 	
-	public function next(){
-		return next($this->data_collection);
+	public function next():void{
+		next($this->data_collection);
 	}
 	
-	public function key(){
+	public function key():mixed{
 		return key($this->data_collection);
 	}
 	
-	public function valid(){
-		return current($this->data_collection);
+	public function valid():bool{
+		return current($this->data_collection) && true;
 	}
 	
-	public function rewind(){
+	public function rewind():void{
 		reset($this->data_collection);
 	}
 	
