@@ -51,7 +51,7 @@ class Util_Collection implements \Iterator,\Countable{
 	 * Url for the previous page, before this page
 	 * @var string
 	 */
-	private $link_previous = '';
+	private string $link_previous = '';
 	
 	/**
  	 * 
@@ -91,7 +91,7 @@ class Util_Collection implements \Iterator,\Countable{
 		}
 	}
 
-	public function count(){
+	public function count():int{
 		return $this->total_entries_in_query; //CHECK THIS IS NOT THE GENERAL NUMBER FOR ALL PAGES
 	}
 	
@@ -140,12 +140,18 @@ class Util_Collection implements \Iterator,\Countable{
 	public function next_link():?string{
 	    return $this->link_next;
 	}
-	
-	public function page(){
+
+	/**
+	 * @return integer page number
+	 */
+	public function page():int{
 	    return $this->page;
 	}
 	
-	public function page_size(){
+	/**
+	 * @return integer page size (records)
+	 */
+	public function page_size():int{
 	    return $this->page_size;
 	}
 }
