@@ -43,18 +43,19 @@ class Util_Collection implements \Iterator,\Countable{
 	
 	/**
 	 * Url for the next page for this set
-	 * @var string
+	 * @var string|null
 	 */
-	private string $link_next = '';
+	private ?string $link_next = '';
 	
 	/**
 	 * Url for the previous page, before this page
-	 * @var string
+	 * @var string|null
 	 */
-	private string $link_previous = '';
+	private ?string $link_previous = '';
 	
 	/**
- 	 * 
+ 	 * @param Util_RawResponse $RawResponse
+	 * @param callable $translation_func
    	 */
 	public function __construct(Util_RawResponse $RawResponse,callable $translation_func){
 		$this->translation_func = $translation_func;
@@ -73,18 +74,18 @@ class Util_Collection implements \Iterator,\Countable{
 		//It will have ONLY the one, fully loaded, object
 		if(isset($RawResponse->body->id) && $RawResponse->body->id){//one full object was returned
 			$this->data_collection 			= [$RawResponse->body];
-			$this->total_entries_in_query 	= 1;
-			$this->page_size 				= 1;
-			$this->page 					= 1;
+			$this->total_entries_in_query 		= 1;
+			$this->page_size 			= 1;
+			$this->page 				= 1;
 			$this->link_previous			= null;
-			$this->link_next				= null;
+			$this->link_next			= null;
 		} else { //a real collection
 			$this->data_collection 			= $RawResponse->body->data;
-			$this->total_entries_in_query 	= $RawResponse->body->total;
-			$this->page_size 				= $RawResponse->body->per_page;
-			$this->page 					= $RawResponse->body->page;
+			$this->total_entries_in_query 		= $RawResponse->body->total;
+			$this->page_size 			= $RawResponse->body->per_page;
+			$this->page 				= $RawResponse->body->page;
 			$this->link_previous			= $RawResponse->body->links->prev??null;//at the edges u can still get null here 
-			$this->link_next				= $RawResponse->body->links->next??null;//at the edges u can still get null here
+			$this->link_next			= $RawResponse->body->links->next??null;//at the edges u can still get null here
 			if($this->total_entries_in_query === 0){
 				$this->translation_func = function($nothing){return null;};
 			}
